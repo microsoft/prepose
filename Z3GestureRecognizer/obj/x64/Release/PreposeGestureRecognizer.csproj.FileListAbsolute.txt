@@ -1,0 +1,13 @@
+C:\Users\dmolnar\Documents\prepose\bin\x64\Release\PreposeGestureRecognizer.exe.config
+C:\Users\dmolnar\Documents\prepose\bin\x64\Release\PreposeGestureRecognizer.exe
+C:\Users\dmolnar\Documents\prepose\bin\x64\Release\PreposeGestureRecognizer.pdb
+C:\Users\dmolnar\Documents\prepose\Z3GestureRecognizer\obj\x64\Release\PreposeGestureRecognizer.csprojResolveAssemblyReference.cache
+C:\Users\dmolnar\Documents\prepose\Z3GestureRecognizer\obj\x64\Release\MainWindow.baml
+C:\Users\dmolnar\Documents\prepose\Z3GestureRecognizer\obj\x64\Release\MainWindow.g.cs
+C:\Users\dmolnar\Documents\prepose\Z3GestureRecognizer\obj\x64\Release\App.g.cs
+C:\Users\dmolnar\Documents\prepose\Z3GestureRecognizer\obj\x64\Release\PreposeGestureRecognizer_MarkupCompile.cache
+C:\Users\dmolnar\Documents\prepose\Z3GestureRecognizer\obj\x64\Release\PreposeGestureRecognizer.g.resources
+C:\Users\dmolnar\Documents\prepose\Z3GestureRecognizer\obj\x64\Release\PreposeGestureRecognizer.Properties.Resources.resources
+C:\Users\dmolnar\Documents\prepose\Z3GestureRecognizer\obj\x64\Release\PreposeGestureRecognizer.csproj.GenerateResource.Cache
+C:\Users\dmolnar\Documents\prepose\Z3GestureRecognizer\obj\x64\Release\PreposeGestureRecognizer.exe
+C:\Users\dmolnar\Documents\prepose\Z3GestureRecognizer\obj\x64\Release\PreposeGestureRecognizer.pdb

@@ -1,0 +1,17 @@
+; first-position-interpolated-0Xfirst-position-interpolated-1
+(set-info :status UNKNOWN)
+(set-logic QF_LRA)
+(declare-fun |ThumbRight Z| () Real)
+(declare-fun |ThumbRight Y| () Real)
+(declare-fun |ThumbRight X| () Real)
+(assert
+(let (($x2834 (and true true)))
+(let ((?x5246 (- |ThumbRight Z| |ThumbRight Z|)))
+(let ((?x5552 (ite (>= ?x5246 0.0) ?x5246 (- 0.0 ?x5246))))
+(let ((?x448 (- |ThumbRight Y| |ThumbRight Y|)))
+(let ((?x5554 (ite (>= ?x448 0.0) ?x448 (- 0.0 ?x448))))
+(let ((?x3577 (- |ThumbRight X| |ThumbRight X|)))
+(let ((?x5545 (ite (>= ?x3577 0.0) ?x3577 (- 0.0 ?x3577))))
+(let ((?x5543 (ite (>= ?x5545 ?x5554) ?x5545 ?x5554)))
+(and (and (< (ite (>= ?x5543 ?x5552) ?x5543 ?x5552) 15.0)) true $x2834))))))))))
+(check-sat)

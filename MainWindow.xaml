@@ -1,0 +1,42 @@
+﻿<Window x:Class="BodyBasicsWPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Body Basics" 
+        Height="961.5" Width="700" 
+        Loaded="MainWindow_Loaded"
+        Closing="MainWindow_Closing">
+  <Window.Resources>
+    <SolidColorBrush x:Key="MediumGreyBrush" Color="#ff6e6e6e" />
+    <SolidColorBrush x:Key="BlackBrush" Color="#ff000000" />
+    <SolidColorBrush x:Key="KinectPurpleBrush" Color="#ff52318f" />
+    <SolidColorBrush x:Key="KinectBlueBrush" Color="#ff00BCF2" />
+  </Window.Resources>
+  <Grid Margin="10,0,10,106">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <DockPanel Grid.Row="0" Margin="0 0 0 20">
+      <Image DockPanel.Dock="Left" Source="Images\Logo.png" Stretch="Fill" Height="32" Width="81" Margin="0 10 0 5" />
+      <TextBlock DockPanel.Dock="Right" Margin="0 0 -1 0" VerticalAlignment="Bottom" Foreground="{StaticResource MediumGreyBrush}" FontFamily="Segoe UI" FontSize="18">Body Basics</TextBlock>
+      <Image Source="Images\Status.png" Stretch="None" HorizontalAlignment="Center" Margin="0 0 0 5" />
+    </DockPanel>
+    <Viewbox Grid.Row="1" HorizontalAlignment="Center">
+      <Image Source="{Binding ImageSource}" Stretch="UniformToFill" />
+    </Viewbox>
+    <StatusBar Grid.Row="2" HorizontalAlignment="Stretch" Name="statusBar" VerticalAlignment="Bottom" Background="White" Foreground="{StaticResource BlackBrush}">
+      <StatusBarItem Content="{Binding StatusText}" />
+    </StatusBar>
+    <Grid Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Top" Name="regexpgrid" Margin="0 10 10 10" Background="White">
+      <TextBox x:Name="Regexp" Height="20" Width="540" HorizontalAlignment="Left" MouseDoubleClick="RegexpClicked">
+        (a|b|c|d|e|f|g|h|i)
+      </TextBox>
+    </Grid>
+    <UniformGrid Grid.Row="4" Rows="3" Columns="4" HorizontalAlignment="Left" Height="Auto" VerticalAlignment="Top" x:Name="CommandsTextGrid" Margin="0 10 10 10" Background="White">
+    </UniformGrid>
+    <Button Name="Start" Width="111" HorizontalAlignment="Right" Margin="0,10,12,28" Grid.Row="2" Click="StartClicked">Start Sequence</Button>
+    <TextBlock Name="FeedbackText" Visibility="Hidden" HorizontalAlignment="Left" Margin="24,567,0,0" Grid.Row="1" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Height="63" Width="617" FontSize="36" Background="#CCFFFFFF"/>
+  </Grid>
+</Window>

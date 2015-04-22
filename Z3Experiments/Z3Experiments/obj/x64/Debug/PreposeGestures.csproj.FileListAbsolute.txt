@@ -1,0 +1,9 @@
+C:\Users\dmolnar\Documents\prepose\Z3Experiments\Z3Experiments\bin\x64\Debug\PreposeGestures.exe.config
+C:\Users\dmolnar\Documents\prepose\Z3Experiments\Z3Experiments\bin\x64\Debug\PreposeGestures.exe
+C:\Users\dmolnar\Documents\prepose\Z3Experiments\Z3Experiments\bin\x64\Debug\PreposeGestures.pdb
+C:\Users\dmolnar\Documents\prepose\Z3Experiments\Z3Experiments\bin\x64\Debug\Antlr4.Runtime.v4.5.dll
+C:\Users\dmolnar\Documents\prepose\Z3Experiments\Z3Experiments\bin\x64\Debug\BigRationalLibrary.dll
+C:\Users\dmolnar\Documents\prepose\Z3Experiments\Z3Experiments\bin\x64\Debug\Microsoft.Z3.dll
+C:\Users\dmolnar\Documents\prepose\Z3Experiments\Z3Experiments\obj\x64\Debug\PreposeGestures.exe
+C:\Users\dmolnar\Documents\prepose\Z3Experiments\Z3Experiments\obj\x64\Debug\PreposeGestures.pdb
+C:\Users\dmolnar\Documents\prepose\Z3Experiments\Z3Experiments\obj\x64\Debug\PreposeGestures.csprojResolveAssemblyReference.cache

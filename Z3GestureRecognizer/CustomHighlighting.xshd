@@ -1,0 +1,128 @@
+﻿<?xml version="1.0"?>
+<SyntaxDefinition name="Custom Highlighting" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+	<Color name="Comment" foreground="LightGray" />
+	<Color name="String" foreground="Blue" />
+	
+	<!-- This is the main ruleset. -->
+	<RuleSet>
+		<Span color="Comment" begin="//" />
+		<Span color="Comment" multiline="true" begin="/\*" end="\*/" />
+		
+		<Span color="String">
+			<Begin>"</Begin>
+			<End>"</End>
+			<RuleSet>
+				<!-- nested span for escape sequences -->
+				<Span begin="\\" end="." />
+			</RuleSet>
+		</Span>
+
+		<!-- Transforms -->
+		<Keywords fontWeight="bold" foreground="Red">
+			<Word>point</Word>
+			<Word>rotate</Word>
+			<!-- ... -->
+		</Keywords>
+
+		<!-- Restrictions -->
+		<Keywords fontWeight="bold" foreground="Red">
+			<Word>put</Word>
+			<Word>touch</Word>
+			<Word>align</Word>
+      <Word>don't</Word>
+			<!-- ... -->
+		</Keywords>
+
+    <!-- Body Parts -->
+    <Keywords fontWeight="bold" foreground="DarkOrange">
+      <Word>your neck</Word>
+      <Word>your head</Word>
+      <Word>your spine mid</Word>
+      <Word>your spine base</Word>
+      <Word>your spine shoulder</Word>
+      <Word>your left shoulder</Word>
+      <Word>your left elbow</Word>
+      <Word>your left wrist</Word>
+      <Word>your left hand</Word>
+      <Word>your left hand tip</Word>
+      <Word>your left thumb</Word>
+      <Word>your left hip</Word>
+      <Word>your left knee</Word>
+      <Word>your left ankle</Word>
+      <Word>your left foot</Word>
+      <Word>your right shoulder</Word>
+      <Word>your right elbow</Word>
+      <Word>your right wrist</Word>
+      <Word>your right hand</Word>
+      <Word>your right hand tip</Word>
+      <Word>your right thumb</Word>
+      <Word>your right hip</Word>
+      <Word>your right knee</Word>
+      <Word>your right ankle</Word>
+      <Word>your right foot</Word>
+      <Word>your left arm</Word>
+      <Word>your left leg</Word>
+      <Word>your right arm</Word>
+      <Word>your right leg</Word>
+      <Word>your spine</Word>
+      <Word>your back</Word>
+      <Word>your arms</Word>
+      <Word>your legs</Word>
+      <Word>your shoulders</Word>
+      <Word>your wrists</Word>
+      <Word>your elbows</Word>
+      <Word>your hands</Word>
+      <Word>your hands tips</Word>
+      <Word>your thumbs</Word>
+      <Word>your hips</Word>
+      <Word>your knees</Word>
+      <Word>your ankles</Word>
+      <Word>your feet</Word>
+      <Word>you</Word>
+    </Keywords>
+
+    <!-- Directions -->
+    <Keywords fontWeight="bold" foreground="Green">
+      <Word>up</Word>
+      <Word>down</Word>
+      <Word>to your front</Word>
+      <Word>to your back</Word>
+      <Word>to your left</Word>
+      <Word>to your right</Word>
+      <Word>in front of</Word>
+      <Word>behind</Word>
+      <Word>above</Word>
+      <Word>on top of</Word>
+      <Word>below</Word>
+      <Word>to the left of</Word>
+      <Word>to the right of</Word>
+    </Keywords>
+
+		<!-- Type Declarations -->
+		<Keywords fontWeight="bold" foreground="Black">
+			<Word>POSE</Word>
+			<Word>EXECUTION</Word>
+			<Word>GESTURE</Word>
+			<Word>APP</Word>
+			<!-- ... -->
+		</Keywords>
+
+    <Keywords fontWeight="bold" foreground="Blue">
+      <Word>degrees</Word>
+    </Keywords>
+		
+		<Keywords fontWeight="bold" fontStyle="italic" foreground="Red">
+			<Word>AvalonEdit</Word>
+		</Keywords>
+		
+		<!-- Digits -->
+		<Rule fontWeight="bold" foreground="Blue">
+			\b0[xX][0-9a-fA-F]+  # hex number
+		|    \b
+			(    \d+(\.[0-9]+)?   #number with optional floating point
+			|    \.[0-9]+         #or just starting with floating point
+			)
+			([eE][+-]?[0-9]+)? # optional exponent
+		</Rule>
+	</RuleSet>
+</SyntaxDefinition>

@@ -1,0 +1,79 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PreposeGestures", "Z3Experiments\Z3Experiments\PreposeGestures.csproj", "{AEB28AC8-F6AE-4689-89AF-E090B698A7E2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PreposeGestureRecognizer", "Z3GestureRecognizer\PreposeGestureRecognizer.csproj", "{CFA1F5A7-05D6-4E9D-9313-0617185F14FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PreposeGesturesFrameReaderConsoleExample", "PreposeGesturesFrameReaderConsoleExample\PreposeGesturesFrameReaderConsoleExample.csproj", "{2DF9A73B-36D5-4C58-9FE1-EC0C01A5EBEE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PreposeGesturesFrameReader", "PreposeGesturesFrameReader\PreposeGesturesFrameReader.csproj", "{8309A1CE-DB5E-49D6-9ED3-73FCB5BD3701}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6A9C1724-739A-4B2B-9720-C437B6D65930}"
+	ProjectSection(SolutionItems) = preProject
+		AvalonEdit - OSS Use Approved.msg = AvalonEdit - OSS Use Approved.msg
+		PrePose.pptx = PrePose.pptx
+		README-MIT-open-source.txt = README-MIT-open-source.txt
+		README.docx = README.docx
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AEB28AC8-F6AE-4689-89AF-E090B698A7E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEB28AC8-F6AE-4689-89AF-E090B698A7E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEB28AC8-F6AE-4689-89AF-E090B698A7E2}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{AEB28AC8-F6AE-4689-89AF-E090B698A7E2}.Debug|Mixed Platforms.Build.0 = Debug|x64
+		{AEB28AC8-F6AE-4689-89AF-E090B698A7E2}.Debug|x64.ActiveCfg = Debug|x64
+		{AEB28AC8-F6AE-4689-89AF-E090B698A7E2}.Debug|x64.Build.0 = Debug|x64
+		{AEB28AC8-F6AE-4689-89AF-E090B698A7E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEB28AC8-F6AE-4689-89AF-E090B698A7E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEB28AC8-F6AE-4689-89AF-E090B698A7E2}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{AEB28AC8-F6AE-4689-89AF-E090B698A7E2}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{AEB28AC8-F6AE-4689-89AF-E090B698A7E2}.Release|x64.ActiveCfg = Release|Any CPU
+		{CFA1F5A7-05D6-4E9D-9313-0617185F14FB}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{CFA1F5A7-05D6-4E9D-9313-0617185F14FB}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{CFA1F5A7-05D6-4E9D-9313-0617185F14FB}.Debug|Mixed Platforms.Build.0 = Debug|x64
+		{CFA1F5A7-05D6-4E9D-9313-0617185F14FB}.Debug|x64.ActiveCfg = Debug|x64
+		{CFA1F5A7-05D6-4E9D-9313-0617185F14FB}.Debug|x64.Build.0 = Debug|x64
+		{CFA1F5A7-05D6-4E9D-9313-0617185F14FB}.Release|Any CPU.ActiveCfg = Release|x64
+		{CFA1F5A7-05D6-4E9D-9313-0617185F14FB}.Release|Mixed Platforms.ActiveCfg = Release|x64
+		{CFA1F5A7-05D6-4E9D-9313-0617185F14FB}.Release|Mixed Platforms.Build.0 = Release|x64
+		{CFA1F5A7-05D6-4E9D-9313-0617185F14FB}.Release|x64.ActiveCfg = Release|x64
+		{CFA1F5A7-05D6-4E9D-9313-0617185F14FB}.Release|x64.Build.0 = Release|x64
+		{2DF9A73B-36D5-4C58-9FE1-EC0C01A5EBEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DF9A73B-36D5-4C58-9FE1-EC0C01A5EBEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DF9A73B-36D5-4C58-9FE1-EC0C01A5EBEE}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{2DF9A73B-36D5-4C58-9FE1-EC0C01A5EBEE}.Debug|Mixed Platforms.Build.0 = Debug|x64
+		{2DF9A73B-36D5-4C58-9FE1-EC0C01A5EBEE}.Debug|x64.ActiveCfg = Debug|x64
+		{2DF9A73B-36D5-4C58-9FE1-EC0C01A5EBEE}.Debug|x64.Build.0 = Debug|x64
+		{2DF9A73B-36D5-4C58-9FE1-EC0C01A5EBEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DF9A73B-36D5-4C58-9FE1-EC0C01A5EBEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DF9A73B-36D5-4C58-9FE1-EC0C01A5EBEE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{2DF9A73B-36D5-4C58-9FE1-EC0C01A5EBEE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{2DF9A73B-36D5-4C58-9FE1-EC0C01A5EBEE}.Release|x64.ActiveCfg = Release|Any CPU
+		{8309A1CE-DB5E-49D6-9ED3-73FCB5BD3701}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8309A1CE-DB5E-49D6-9ED3-73FCB5BD3701}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8309A1CE-DB5E-49D6-9ED3-73FCB5BD3701}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{8309A1CE-DB5E-49D6-9ED3-73FCB5BD3701}.Debug|Mixed Platforms.Build.0 = Debug|x64
+		{8309A1CE-DB5E-49D6-9ED3-73FCB5BD3701}.Debug|x64.ActiveCfg = Debug|x64
+		{8309A1CE-DB5E-49D6-9ED3-73FCB5BD3701}.Debug|x64.Build.0 = Debug|x64
+		{8309A1CE-DB5E-49D6-9ED3-73FCB5BD3701}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8309A1CE-DB5E-49D6-9ED3-73FCB5BD3701}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8309A1CE-DB5E-49D6-9ED3-73FCB5BD3701}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8309A1CE-DB5E-49D6-9ED3-73FCB5BD3701}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{8309A1CE-DB5E-49D6-9ED3-73FCB5BD3701}.Release|x64.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

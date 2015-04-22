@@ -1,0 +1,15 @@
+- PreposeGestureRecognizer - UI application based on a Kinect sample
+	- requires BigRationalLibrary for Z3 manipulation
+	- requires ICSharpCode.AvalonEdit for UI color highlighting and completion of Repose text (open source library)
+	- Microsoft.Z3 
+	- also as part of the build, native DLLs are copied 
+		- copy "$(SolutionDir)External\x64\libz3.dll" "$(OutDir)libz3.dll"
+		- copy "$(SolutionDir)External\x64\Kinect20.dll" "$(OutDir)Kinect20.dll" // TODO
+	- CustomHighlighting.xshd contains highlighting for Repose
+	- Can hit an exception parsing XAML if you're lacking the rigth Kinect SDK
+
+- PreposeGestures - library for parsing, Z3 compilation and for safety testing and static analysis and runtime support
+
+- To regenerate the grammar, update the hard-coded path in build.bat and run it. You'll need to have Java JRE installed on you machine, because ANTLR depends on it.
+
+- public partial class PreposeGesturesParser : Antlr4.Runtime.Parser {

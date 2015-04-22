@@ -1,0 +1,11 @@
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\bin\Release\PreposeGesturesFrameReader.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\bin\Release\PreposeGesturesFrameReader.pdb
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\bin\Release\Microsoft.Kinect.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\bin\Release\Microsoft.Z3.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\bin\Release\PreposeGestures.exe
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\bin\Release\Antlr4.Runtime.v4.5.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\bin\Release\BigRationalLibrary.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\bin\Release\PreposeGestures.pdb
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\obj\Release\PreposeGesturesFrameReader.csprojResolveAssemblyReference.cache
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\obj\Release\PreposeGesturesFrameReader.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\obj\Release\PreposeGesturesFrameReader.pdb

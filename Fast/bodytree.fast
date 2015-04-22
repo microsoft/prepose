@@ -1,0 +1,993 @@
+// A Kinect skeleton Animator
+Enum Side {C, L, R}
+
+// Each transformation asks each node if the joint type (jt) is transformable at the time && if the side (st) is also transformable
+// After the transformation the modified joints are set to at = true (active) in order to be considered on the matching process
+// This way partial matching are allowed, if a complete matching is needed then all body joints must be activated (at = true)
+
+Alphabet BodyPart[x:real, y:real, z:real, s:Side, jt:bool, st:bool, at:bool]{
+SpineMid(2), 
+SpineShoulder(3), 
+Neck(1), 
+Head, 
+Shoulder(1), 
+Elbow(1), 
+Wrist(1),
+Hand(2),
+HandTip,
+Thumb,
+SpineBase(2), 
+Hip(1), 
+Knee(1), 
+Ankle(1), 
+Foot}
+
+
+
+
+
+
+
+//---------------------------------------------- CORE DEFINITION OF BODY TREE RESTRICTIONS ----------------------------------------------//
+
+//Definition of what a correct body_tree is
+//"l" prefix to denote languages
+
+Public Lang lbody	: BodyPart{ SpineMid(u,d)        where (s == Side.C) given (lspineShoulder u) (lspineBase d) }
+Lang lspineShoulder : BodyPart{ SpineShoulder(l,c,r) where (s == Side.C) given (lshoulder l) (lleft l) (lneck c) (lshoulder r) (lright r) }
+Lang lspineBase		: BodyPart{ SpineBase(l,r)       where (s == Side.C) given (lhip l) (lleft l) (lhip r) (lright r) }
+Lang lhand			: BodyPart{ Hand(ti, th)                             given (lhandtip ti) (lthumb th) }
+Lang lneck			: BodyPart{ Neck(h)                                  given (lhead h) }
+Lang lshoulder		: BodyPart{ Shoulder(e)                              given (lelbow e) }
+Lang lelbow			: BodyPart{ Elbow(w)                                 given (lwrist w) }
+Lang lwrist			: BodyPart{ Wrist(h)                                 given (lhand h) }
+Lang lhip			: BodyPart{ Hip(k)                                   given (lknee k) }
+Lang lknee			: BodyPart{ Knee(a)                                  given (lankle a) }
+Lang lankle			: BodyPart{ Ankle(h)                                 given (lfoot h) }
+Lang lhead			: BodyPart{ Head()}
+Lang lhandtip		: BodyPart{ HandTip() }
+Lang lthumb			: BodyPart{ Thumb() }
+Lang lfoot			: BodyPart{ Foot() }
+
+Lang lleft : BodyPart{ Shoulder(c)  where (s == Side.L) given (lleft c) 
+					 | Elbow(c)     where (s == Side.L) given (lleft c)
+					 | Wrist(c)     where (s == Side.L) given (lleft c) 
+					 | Hand(ti, th) where (s == Side.L) given (lleft ti) (lleft th)
+					 | HandTip()    where (s == Side.L)
+					 | Thumb()      where (s == Side.L)
+					 | Hip(c)       where (s == Side.L) given (lleft c)
+					 | Knee(c)      where (s == Side.L) given (lleft c) 
+					 | Ankle(c)     where (s == Side.L) given (lleft c)
+					 | Foot()       where (s == Side.L) }
+
+Lang lright : BodyPart{ Shoulder(e)  where (s == Side.R) given (lright e) 
+					  | Elbow(w)     where (s == Side.R) given (lright w)
+					  | Wrist(h)     where (s == Side.R) given (lright h) 
+					  | Hand(ti, th) where (s == Side.R) given (lright ti) (lright th)
+					  | HandTip()    where (s == Side.R)
+					  | Thumb()      where (s == Side.R)
+					  | Hip(k)       where (s == Side.R) given (lright k)
+					  | Knee(a)      where (s == Side.R) given (lright a) 
+					  | Ankle(f)     where (s == Side.R) given (lright f)
+					  | Foot()       where (s == Side.R) }
+
+
+
+
+					  
+  
+
+
+
+
+
+
+
+  
+//---------------------------------------------- JOINTS && SIDES ACTIVATORS ----------------------------------------------//
+
+//These two transductions below are used on compositions to activate the needed side of the joint 
+//in order to be able to perform other generic transformations
+//leftst > st in the end denotes the entire side is activated
+Public Trans leftst : BodyPart -> BodyPart  
+  { SpineShoulder(l,c,r) where (s == Side.C) to (SpineShoulder [x, y, z, s, jt, st,   at] (leftst l)  c r        )
+  | SpineMid(u,d)        where (s == Side.C) to (SpineMid      [x, y, z, s, jt, st,   at] (leftst u)  (leftst d) )
+  | SpineBase(l,r)	     where (s == Side.C) to (SpineBase     [x, y, z, s, jt, st,   at] (leftst l)  r          )
+  | Hand(ti,th)     	 where (s == Side.L) to (Hand          [x, y, z, s, jt, true, at] (leftst ti) (leftst th))
+  | Shoulder(e) 		 where (s == Side.L) to (Shoulder      [x, y, z, s, jt, true, at] (leftst e)	         )
+  | Elbow(w)    		 where (s == Side.L) to (Elbow         [x, y, z, s, jt, true, at] (leftst w)             )
+  | Wrist(h)    		 where (s == Side.L) to (Wrist         [x, y, z, s, jt, true, at] (leftst h)             )
+  | Hip(k)      		 where (s == Side.L) to (Hip           [x, y, z, s, jt, true, at] (leftst k)             )
+  | Knee(a)     		 where (s == Side.L) to (Knee          [x, y, z, s, jt, true, at] (leftst a)             )
+  | Ankle(f)   		     where (s == Side.L) to (Ankle         [x, y, z, s, jt, true, at] (leftst f)             )
+  | HandTip()  		     where (s == Side.L) to (HandTip       [x, y, z, s, jt, true, at]                        )
+  | Thumb()    		     where (s == Side.L) to (Thumb    	   [x, y, z, s, jt, true, at]                        )
+  | Foot()     		     where (s == Side.L) to (Foot          [x, y, z, s, jt, true, at]                        )}
+
+Public Trans rightst : BodyPart -> BodyPart  
+  { SpineShoulder(l,c,r) where (s == Side.C) to (SpineShoulder [x, y, z, s, jt, st,   at] l c (rightst r)          )
+  | SpineMid(u,d)        where (s == Side.C) to (SpineMid      [x, y, z, s, jt, st,   at] (rightst u) (rightst d)  )
+  | SpineBase(l,r)	     where (s == Side.C) to (SpineBase     [x, y, z, s, jt, st,   at] l (rightst r)            )
+  | Hand(ti,th)     	 where (s == Side.L) to (Hand          [x, y, z, s, jt, true, at] (rightst ti) (rightst th))
+  | Shoulder(e) 		 where (s == Side.L) to (Shoulder      [x, y, z, s, jt, true, at] (rightst e)	           )
+  | Elbow(w)    		 where (s == Side.L) to (Elbow         [x, y, z, s, jt, true, at] (rightst w)              )
+  | Wrist(h)    		 where (s == Side.L) to (Wrist         [x, y, z, s, jt, true, at] (rightst h)              )
+  | Hip(k)      		 where (s == Side.L) to (Hip           [x, y, z, s, jt, true, at] (rightst k)              )
+  | Knee(a)     		 where (s == Side.L) to (Knee          [x, y, z, s, jt, true, at] (rightst a)              )
+  | Ankle(f)   		     where (s == Side.L) to (Ankle         [x, y, z, s, jt, true, at] (rightst f)              )
+  | HandTip()  		     where (s == Side.L) to (HandTip       [x, y, z, s, jt, true, at]                          )
+  | Thumb()    		     where (s == Side.L) to (Thumb    	   [x, y, z, s, jt, true, at]                          )
+  | Foot()     		     where (s == Side.L) to (Foot          [x, y, z, s, jt, true, at]                          )}
+
+//These several transductions below are used on compositions to activate the needed joint 
+//in order to be able to perform other generic transformations
+Public Trans spinemid      : BodyPart -> BodyPart { SpineMid(u,d)        to (SpineMid      [x, y, z, s, true, st, at] u d                        )}
+Public Trans spineshoulder : BodyPart -> BodyPart { SpineMid(u,d)        to (SpineMid      [x, y, z, s, jt,   st, at] (spineshoulder u) d        )
+												  | SpineShoulder(l,c,r) to (SpineShoulder [x, y, z, s, true, st, at] l c r                      )}
+Public Trans neck          : BodyPart -> BodyPart { SpineMid(u,d)        to (SpineMid      [x, y, z, s, jt,   st, at] (neck u) d                 )
+												  | SpineShoulder(l,c,r) to (SpineShoulder [x, y, z, s, jt,   st, at] l (neck c) r               )
+												  | Neck(h)              to (Neck          [x, y, z, s, true, st, at] h                          )}
+Public Trans head          : BodyPart -> BodyPart { SpineMid(u,d)        to (SpineMid      [x, y, z, s, jt,   st, at] (head u) d                 )
+												  | SpineShoulder(l,c,r) to (SpineShoulder [x, y, z, s, jt,   st, at] l (head c) r               )
+												  | Neck(h)              to (Neck          [x, y, z, s, jt,   st, at] (head h)                   )
+												  | Head()               to (Head          [x, y, z, s, true, st, at]                            )}
+Public Trans shoulder      : BodyPart -> BodyPart { SpineMid(u,d)        to (SpineMid      [x, y, z, s, jt,   st, at] (shoulder u) d             )
+												  | SpineShoulder(l,c,r) to (SpineShoulder [x, y, z, s, jt,   st, at] (shoulder l) c (shoulder r))
+												  | Shoulder(e)          to (Shoulder      [x, y, z, s, true, st, at] e                          )}
+Public Trans elbow         : BodyPart -> BodyPart { SpineMid(u,d)        to (SpineMid      [x, y, z, s, jt,   st, at] (elbow u) d                )
+												  | SpineShoulder(l,c,r) to (SpineShoulder [x, y, z, s, jt,   st, at] (elbow l) c (elbow r)      )
+												  | Shoulder(e)          to (Shoulder      [x, y, z, s, jt,   st, at] (elbow e)                  )        
+												  | Elbow(w)             to (Elbow         [x, y, z, s, true, st, at] w                          )}
+Public Trans wrist         : BodyPart -> BodyPart { SpineMid(u,d)        to (SpineMid      [x, y, z, s, jt,   st, at] (wrist u) d                )
+												  | SpineShoulder(l,c,r) to (SpineShoulder [x, y, z, s, jt,   st, at] (wrist l) c (wrist r)      )
+												  | Shoulder(e)          to (Shoulder      [x, y, z, s, jt,   st, at] (wrist e)                  )        
+												  | Elbow(w)             to (Elbow         [x, y, z, s, jt,   st, at] (wrist w)                  )       
+												  | Wrist(h)             to (Wrist         [x, y, z, s, true, st, at] h                          )}
+Public Trans hand          : BodyPart -> BodyPart { SpineMid(u,d)        to (SpineMid      [x, y, z, s, jt,   st, at] (hand u) d                 )
+												  | SpineShoulder(l,c,r) to (SpineShoulder [x, y, z, s, jt,   st, at] (hand l) c (hand r)        )
+												  | Shoulder(e)          to (Shoulder      [x, y, z, s, jt,   st, at] (hand e)                   )       
+												  | Elbow(w)             to (Elbow         [x, y, z, s, jt,   st, at] (hand w)                   )     
+												  | Wrist(h)             to (Wrist         [x, y, z, s, jt,   st, at] (hand h)                   )
+												  | Hand(ti, th)         to (Hand          [x, y, z, s, true, st, at] ti th                      )}                                                  
+Public Trans handtip       : BodyPart -> BodyPart { SpineMid(u,d)        to (SpineMid      [x, y, z, s, jt,   st, at] (handtip u) d              )
+												  | SpineShoulder(l,c,r) to (SpineShoulder [x, y, z, s, jt,   st, at] (handtip l) c (handtip r)  )
+												  | Shoulder(e)          to (Shoulder      [x, y, z, s, jt,   st, at] (handtip e)                )      
+												  | Elbow(w)             to (Elbow         [x, y, z, s, jt,   st, at] (handtip w)                )        
+												  | Wrist(h)             to (Wrist         [x, y, z, s, jt,   st, at] (handtip h)                )         
+												  | Hand(ti, th)         to (Hand          [x, y, z, s, jt,   st, at] (handtip ti) th            )          
+												  | HandTip()            to (HandTip       [x, y, z, s, true, st, at]                            )}                                                  
+Public Trans thumb         : BodyPart -> BodyPart { SpineMid(u,d)        to (SpineMid      [x, y, z, s, jt,   st, at] (thumb u) d                )
+												  | SpineShoulder(l,c,r) to (SpineShoulder [x, y, z, s, jt,   st, at] (thumb l) c (thumb r)      )
+												  | Shoulder(e)          to (Shoulder      [x, y, z, s, jt,   st, at] (thumb e)                  )     
+												  | Elbow(w)             to (Elbow         [x, y, z, s, jt,   st, at] (thumb w)                  )      
+												  | Wrist(h)             to (Wrist         [x, y, z, s, jt,   st, at] (thumb h)                  )      
+												  | Hand(ti, th)         to (Hand          [x, y, z, s, jt,   st, at] ti (thumb th)              )
+												  | Thumb()              to (Thumb         [x, y, z, s, true, st, at]                            )}
+Public Trans spinebase     : BodyPart -> BodyPart { SpineMid(u,d)        to (SpineMid      [x, y, z, s, jt,   st, at] u (spinebase d)            )
+												  | SpineBase(l,r)       to (SpineBase     [x, y, z, s, true, st, at] l  r                       )}
+Public Trans hip           : BodyPart -> BodyPart { SpineMid(u,d)        to (SpineMid      [x, y, z, s, jt,   st, at] u (hip d)                  )
+												  | SpineBase(l,r)       to (SpineBase     [x, y, z, s, jt,   st, at] (hip l) (hip r)            )           
+												  | Hip(k)               to (Hip           [x, y, z, s, true, st, at] k                          )}
+Public Trans knee          : BodyPart -> BodyPart { SpineMid(u,d)        to (SpineMid      [x, y, z, s, jt,   st, at] u (knee d)                 )
+												  | SpineBase(l,r)       to (SpineBase     [x, y, z, s, jt,   st, at] (knee l) (knee r)          )             
+												  | Hip(k)               to (Hip           [x, y, z, s, jt,   st, at] (knee k)                   )             
+												  | Knee(a)              to (Knee          [x, y, z, s, true, st, at] a                          )}
+Public Trans ankle         : BodyPart -> BodyPart { SpineMid(u,d)        to (SpineMid      [x, y, z, s, jt,   st, at] u (ankle d)                )
+												  | SpineBase(l,r)       to (SpineBase     [x, y, z, s, jt,   st, at] (ankle l) (ankle r)        )               
+												  | Hip(k)               to (Hip           [x, y, z, s, jt,   st, at] (ankle k)                  )              
+												  | Knee(a)              to (Knee          [x, y, z, s, jt,   st, at] (ankle a)                  )             
+												  | Ankle(f)             to (Ankle         [x, y, z, s, true, st, at] f                          )}
+Public Trans foot          : BodyPart -> BodyPart { SpineMid(u,d)        to (SpineMid      [x, y, z, s, jt,   st, at] u (foot d)                 )
+												  | SpineBase(l,r)       to (SpineBase     [x, y, z, s, jt,   st, at] (foot l) (foot r)          )             
+												  | Hip(k)               to (Hip           [x, y, z, s, jt,   st, at] (foot k)                   )             
+												  | Knee(a)              to (Knee          [x, y, z, s, jt,   st, at] (foot a)                   )            
+												  | Ankle(f)             to (Ankle         [x, y, z, s, jt,   st, at] (foot f)                   )            
+												  | Foot()               to (Foot          [x, y, z, s, true, st, at]                            )}
+
+// Reset joint transformable boolean
+Public Trans resetjt : BodyPart -> BodyPart  
+  { SpineShoulder(l,c,r) to (SpineShoulder [x, y, z, s, false, st, at] (resetjt l)  (resetjt c)  (resetjt r)) 
+  | Hand(ti,th)     	 to (Hand          [x, y, z, s, false, st, at] (resetjt ti) (resetjt th)            )
+  | SpineMid(u,d)        to (SpineMid      [x, y, z, s, false, st, at] (resetjt u)  (resetjt d)             )
+  | SpineBase(l,r)	     to (SpineBase     [x, y, z, s, false, st, at] (resetjt l)  (resetjt r)             )
+  | Neck(h)        	     to (Neck          [x, y, z, s, false, st, at] (resetjt h)                          )
+  | Shoulder(e) 		 to (Shoulder      [x, y, z, s, false, st, at] (resetjt e)	                        )
+  | Elbow(w)    		 to (Elbow         [x, y, z, s, false, st, at] (resetjt w)                          )
+  | Wrist(h)    		 to (Wrist         [x, y, z, s, false, st, at] (resetjt h)                          )
+  | Hip(k)      		 to (Hip           [x, y, z, s, false, st, at] (resetjt k)                          )
+  | Knee(a)     		 to (Knee          [x, y, z, s, false, st, at] (resetjt a)                          )
+  | Ankle(f)   		     to (Ankle         [x, y, z, s, false, st, at] (resetjt f)                          )
+  | Head()      		 to (Head          [x, y, z, s, false, st, at]                                      )
+  | HandTip()  		     to (HandTip       [x, y, z, s, false, st, at]                                      )
+  | Thumb()    		     to (Thumb    	   [x, y, z, s, false, st, at]                                      )
+  | Foot()     		     to (Foot          [x, y, z, s, false, st, at] 					                    )}
+  
+// Reset side transformable boolean
+Public Trans resetst : BodyPart -> BodyPart  
+  { SpineShoulder(l,c,r) to (SpineShoulder [x, y, z, s, jt, false, at] (resetst l)  (resetst c)  (resetst r)) 
+  | Hand(ti,th)     	 to (Hand          [x, y, z, s, jt, false, at] (resetst ti) (resetst th)            )
+  | SpineMid(u,d)        to (SpineMid      [x, y, z, s, jt, false, at] (resetst u)  (resetst d)             )
+  | SpineBase(l,r)	     to (SpineBase     [x, y, z, s, jt, false, at] (resetst l)  (resetst r)             )
+  | Neck(h)        	     to (Neck          [x, y, z, s, jt, false, at] (resetst h)                          )
+  | Shoulder(e) 		 to (Shoulder      [x, y, z, s, jt, false, at] (resetst e)	                        )
+  | Elbow(w)    		 to (Elbow         [x, y, z, s, jt, false, at] (resetst w)                          )
+  | Wrist(h)    		 to (Wrist         [x, y, z, s, jt, false, at] (resetst h)                          )
+  | Hip(k)      		 to (Hip           [x, y, z, s, jt, false, at] (resetst k)                          )
+  | Knee(a)     		 to (Knee          [x, y, z, s, jt, false, at] (resetst a)                          )
+  | Ankle(f)   		     to (Ankle         [x, y, z, s, jt, false, at] (resetst f)                          )
+  | Head()      		 to (Head          [x, y, z, s, jt, false, at]                                      )
+  | HandTip()  		     to (HandTip       [x, y, z, s, jt, false, at]                                      )
+  | Thumb()    		     to (Thumb    	   [x, y, z, s, jt, false, at]                                      )
+  | Foot()     		     to (Foot          [x, y, z, s, jt, false, at] 					                    )}
+
+// Reset boolean active
+Public Trans resetat : BodyPart -> BodyPart  
+  { SpineShoulder(l,c,r) to (SpineShoulder [x, y, z, s, jt, st, false] (resetat l)  (resetat c)  (resetat r)) 
+  | Hand(ti,th)     	 to (Hand          [x, y, z, s, jt, st, false] (resetat ti) (resetat th)            )
+  | SpineMid(u,d)        to (SpineMid      [x, y, z, s, jt, st, false] (resetat u)  (resetat d)             )
+  | SpineBase(l,r)	     to (SpineBase     [x, y, z, s, jt, st, false] (resetat l)  (resetat r)             )
+  | Neck(h)        	     to (Neck          [x, y, z, s, jt, st, false] (resetat h)                          )
+  | Shoulder(e) 		 to (Shoulder      [x, y, z, s, jt, st, false] (resetat e)	                        )
+  | Elbow(w)    		 to (Elbow         [x, y, z, s, jt, st, false] (resetat w)                          )
+  | Wrist(h)    		 to (Wrist         [x, y, z, s, jt, st, false] (resetat h)                          )
+  | Hip(k)      		 to (Hip           [x, y, z, s, jt, st, false] (resetat k)                          )
+  | Knee(a)     		 to (Knee          [x, y, z, s, jt, st, false] (resetat a)                          )
+  | Ankle(f)   		     to (Ankle         [x, y, z, s, jt, st, false] (resetat f)                          )
+  | Head()      		 to (Head          [x, y, z, s, jt, st, false]                                      )
+  | HandTip()  		     to (HandTip       [x, y, z, s, jt, st, false]                                      )
+  | Thumb()    		     to (Thumb    	   [x, y, z, s, jt, st, false]                                      )
+  | Foot()     		     to (Foot          [x, y, z, s, jt, st, false] 					                    )}
+
+
+
+
+
+
+
+
+  
+//---------------------------------------------- LANGUAGE RESTRICTIONS ----------------------------------------------//
+
+Fun fisleft  (x:real):bool:= (x < 0.0)
+Fun fisright (x:real):bool:= (x > 0.0)
+Fun fisup    (y:real):bool:= (y > 0.0)
+Fun fisdown  (y:real):bool:= (y < 0.0)
+Fun fisfront (z:real):bool:= (z > 0.0)
+Fun fisback  (z:real):bool:= (z < 0.0)
+
+// Restrictions over positions using languages
+// Languages only evaluates currently transformable joints
+Public Lang isleft : BodyPart
+  { SpineShoulder(l,c,r) where ((fisleft x) && (jt && true)) given (isleft l)  (isleft c)  (isleft r) 
+  | Hand(ti,th)     	 where ((fisleft x) && (jt && st))   given (isleft ti) (isleft th)           
+  | SpineMid(u,d)        where ((fisleft x) && (jt && true)) given (isleft u)  (isleft d)            
+  | SpineBase(l,r)	     where ((fisleft x) && (jt && true)) given (isleft l)  (isleft r)            
+  | Neck(h)        	     where ((fisleft x) && (jt && true)) given (isleft h)                        
+  | Shoulder(e) 		 where ((fisleft x) && (jt && st))   given (isleft e)                        
+  | Elbow(w)    		 where ((fisleft x) && (jt && st))   given (isleft w)                        
+  | Wrist(h)    		 where ((fisleft x) && (jt && st))   given (isleft h)                        
+  | Hip(k)      		 where ((fisleft x) && (jt && st))   given (isleft k)                        
+  | Knee(a)     		 where ((fisleft x) && (jt && st))   given (isleft a)                        
+  | Ankle(f)   		     where ((fisleft x) && (jt && st))   given (isleft f)                        
+  | Head()      		 where ((fisleft x) && (jt && true))                                         
+  | HandTip()  		     where ((fisleft x) && (jt && st))                                           
+  | Thumb()    		     where ((fisleft x) && (jt && st))                                           
+  | Foot()     		     where ((fisleft x) && (jt && st))}
+
+Public Lang isright : BodyPart
+  { SpineShoulder(l,c,r) where ((fisright x) && (jt && true)) given (isright l)  (isright c)  (isright r) 
+  | Hand(ti,th)     	 where ((fisright x) && (jt && st))   given (isright ti) (isright th)           
+  | SpineMid(u,d)        where ((fisright x) && (jt && true)) given (isright u)  (isright d)            
+  | SpineBase(l,r)	     where ((fisright x) && (jt && true)) given (isright l)  (isright r)            
+  | Neck(h)        	     where ((fisright x) && (jt && true)) given (isright h)                        
+  | Shoulder(e) 		 where ((fisright x) && (jt && st))   given (isright e)                        
+  | Elbow(w)    		 where ((fisright x) && (jt && st))   given (isright w)                        
+  | Wrist(h)    		 where ((fisright x) && (jt && st))   given (isright h)                        
+  | Hip(k)      		 where ((fisright x) && (jt && st))   given (isright k)                        
+  | Knee(a)     		 where ((fisright x) && (jt && st))   given (isright a)                        
+  | Ankle(f)   		     where ((fisright x) && (jt && st))   given (isright f)                        
+  | Head()      		 where ((fisright x) && (jt && true))                                         
+  | HandTip()  		     where ((fisright x) && (jt && st))                                           
+  | Thumb()    		     where ((fisright x) && (jt && st))                                           
+  | Foot()     		     where ((fisright x) && (jt && st))}
+
+Public Lang isup : BodyPart
+  { SpineShoulder(l,c,r) where ((fisup y) && (jt && true)) given (isup l)  (isup c)  (isup r) 
+  | Hand(ti,th)			 where ((fisup y) && (jt && st))   given (isup ti) (isup th)           
+  | SpineMid(u,d)        where ((fisup y) && (jt && true)) given (isup u)  (isup d)            
+  | SpineBase(l,r)	     where ((fisup y) && (jt && true)) given (isup l)  (isup r)            
+  | Neck(h)        	     where ((fisup y) && (jt && true)) given (isup h)                        
+  | Shoulder(e) 		 where ((fisup y) && (jt && st))   given (isup e)                        
+  | Elbow(w)    		 where ((fisup y) && (jt && st))   given (isup w)                        
+  | Wrist(h)    		 where ((fisup y) && (jt && st))   given (isup h)                        
+  | Hip(k)      		 where ((fisup y) && (jt && st))   given (isup k)                        
+  | Knee(a)     		 where ((fisup y) && (jt && st))   given (isup a)                        
+  | Ankle(f)   		     where ((fisup y) && (jt && st))   given (isup f)                        
+  | Head()      		 where ((fisup y) && (jt && true))                                         
+  | HandTip()  		     where ((fisup y) && (jt && st))                                           
+  | Thumb()    		     where ((fisup y) && (jt && st))                                           
+  | Foot()     		     where ((fisup y) && (jt && st))}
+
+Public Lang isdown : BodyPart
+  { SpineShoulder(l,c,r) where ((fisdown y) && (jt && true)) given (isdown l)  (isdown c)  (isdown r) 
+  | Hand(ti,th)     	 where ((fisdown y) && (jt && st))   given (isdown ti) (isdown th)           
+  | SpineMid(u,d)        where ((fisdown y) && (jt && true)) given (isdown u)  (isdown d)            
+  | SpineBase(l,r)	     where ((fisdown y) && (jt && true)) given (isdown l)  (isdown r)            
+  | Neck(h)        	     where ((fisdown y) && (jt && true)) given (isdown h)                        
+  | Shoulder(e) 		 where ((fisdown y) && (jt && st))   given (isdown e)                        
+  | Elbow(w)    		 where ((fisdown y) && (jt && st))   given (isdown w)                        
+  | Wrist(h)    		 where ((fisdown y) && (jt && st))   given (isdown h)                        
+  | Hip(k)      		 where ((fisdown y) && (jt && st))   given (isdown k)                        
+  | Knee(a)     		 where ((fisdown y) && (jt && st))   given (isdown a)                        
+  | Ankle(f)   		     where ((fisdown y) && (jt && st))   given (isdown f)                        
+  | Head()      		 where ((fisdown y) && (jt && true))                                         
+  | HandTip()  		     where ((fisdown y) && (jt && st))                                           
+  | Thumb()    		     where ((fisdown y) && (jt && st))                                           
+  | Foot()     		     where ((fisdown y) && (jt && st))}
+
+Public Lang isfront : BodyPart
+  { SpineShoulder(l,c,r) where ((fisfront z) && (jt && true)) given (isfront l)  (isfront c)  (isfront r) 
+  | Hand(ti,th)     	 where ((fisfront z) && (jt && st))   given (isfront ti) (isfront th)           
+  | SpineMid(u,d)        where ((fisfront z) && (jt && true)) given (isfront u)  (isfront d)            
+  | SpineBase(l,r)	     where ((fisfront z) && (jt && true)) given (isfront l)  (isfront r)            
+  | Neck(h)        	     where ((fisfront z) && (jt && true)) given (isfront h)                        
+  | Shoulder(e) 		 where ((fisfront z) && (jt && st))   given (isfront e)                        
+  | Elbow(w)    		 where ((fisfront z) && (jt && st))   given (isfront w)                        
+  | Wrist(h)    		 where ((fisfront z) && (jt && st))   given (isfront h)                        
+  | Hip(k)      		 where ((fisfront z) && (jt && st))   given (isfront k)                        
+  | Knee(a)     		 where ((fisfront z) && (jt && st))   given (isfront a)                        
+  | Ankle(f)   		     where ((fisfront z) && (jt && st))   given (isfront f)                        
+  | Head()      		 where ((fisfront z) && (jt && true))                                         
+  | HandTip()  		     where ((fisfront z) && (jt && st))                                           
+  | Thumb()    		     where ((fisfront z) && (jt && st))                                           
+  | Foot()     		     where ((fisfront z) && (jt && st))}
+
+Public Lang isback : BodyPart
+  { SpineShoulder(l,c,r) where ((fisback z) && (jt && true)) given (isback l)  (isback c)  (isback r) 
+  | Hand(ti,th)     	 where ((fisback z) && (jt && st))   given (isback ti) (isback th)           
+  | SpineMid(u,d)        where ((fisback z) && (jt && true)) given (isback u)  (isback d)            
+  | SpineBase(l,r)	     where ((fisback z) && (jt && true)) given (isback l)  (isback r)            
+  | Neck(h)        	     where ((fisback z) && (jt && true)) given (isback h)                        
+  | Shoulder(e) 		 where ((fisback z) && (jt && st))   given (isback e)                        
+  | Elbow(w)    		 where ((fisback z) && (jt && st))   given (isback w)                        
+  | Wrist(h)    		 where ((fisback z) && (jt && st))   given (isback h)                        
+  | Hip(k)      		 where ((fisback z) && (jt && st))   given (isback k)                        
+  | Knee(a)     		 where ((fisback z) && (jt && st))   given (isback a)                        
+  | Ankle(f)   		     where ((fisback z) && (jt && st))   given (isback f)                        
+  | Head()      		 where ((fisback z) && (jt && true))                                         
+  | HandTip()  		     where ((fisback z) && (jt && st))                                           
+  | Thumb()    		     where ((fisback z) && (jt && st))                                           
+  | Foot()     		     where ((fisback z) && (jt && st))}
+
+Const rangep : real := 0.9
+Const rangen : real := 0.0 - rangep
+
+Fun fispointingleft  (x:real):bool:= (x < rangen)
+Fun fispointingright (x:real):bool:= (x > rangep)
+Fun fispointingup    (y:real):bool:= (y > rangep)
+Fun fispointingdown  (y:real):bool:= (y < rangen)
+Fun fispointingfront (z:real):bool:= (z > rangep)
+Fun fispointingback  (z:real):bool:= (z < rangen)
+
+Public Lang ispointingleft : BodyPart
+  { SpineShoulder(l,c,r) where ((fispointingleft x) && (jt && true)) given (ispointingleft l)  (ispointingleft c)  (ispointingleft r) 
+  | Hand(ti,th)     	 where ((fispointingleft x) && (jt && st))   given (ispointingleft ti) (ispointingleft th)           
+  | SpineMid(u,d)        where ((fispointingleft x) && (jt && true)) given (ispointingleft u)  (ispointingleft d)            
+  | SpineBase(l,r)	     where ((fispointingleft x) && (jt && true)) given (ispointingleft l)  (ispointingleft r)            
+  | Neck(h)        	     where ((fispointingleft x) && (jt && true)) given (ispointingleft h)                        
+  | Shoulder(e) 		 where ((fispointingleft x) && (jt && st))   given (ispointingleft e)                        
+  | Elbow(w)    		 where ((fispointingleft x) && (jt && st))   given (ispointingleft w)                        
+  | Wrist(h)    		 where ((fispointingleft x) && (jt && st))   given (ispointingleft h)                        
+  | Hip(k)      		 where ((fispointingleft x) && (jt && st))   given (ispointingleft k)                        
+  | Knee(a)     		 where ((fispointingleft x) && (jt && st))   given (ispointingleft a)                        
+  | Ankle(f)   		     where ((fispointingleft x) && (jt && st))   given (ispointingleft f)                        
+  | Head()      		 where ((fispointingleft x) && (jt && true))                                         
+  | HandTip()  		     where ((fispointingleft x) && (jt && st))                                           
+  | Thumb()    		     where ((fispointingleft x) && (jt && st))                                           
+  | Foot()     		     where ((fispointingleft x) && (jt && st))}
+
+Public Lang ispointingright : BodyPart
+  { SpineShoulder(l,c,r) where ((fispointingright x) && (jt && true)) given (ispointingright l)  (ispointingright c)  (ispointingright r) 
+  | Hand(ti,th)     	 where ((fispointingright x) && (jt && st))   given (ispointingright ti) (ispointingright th)           
+  | SpineMid(u,d)        where ((fispointingright x) && (jt && true)) given (ispointingright u)  (ispointingright d)            
+  | SpineBase(l,r)	     where ((fispointingright x) && (jt && true)) given (ispointingright l)  (ispointingright r)            
+  | Neck(h)        	     where ((fispointingright x) && (jt && true)) given (ispointingright h)                        
+  | Shoulder(e) 		 where ((fispointingright x) && (jt && st))   given (ispointingright e)                        
+  | Elbow(w)    		 where ((fispointingright x) && (jt && st))   given (ispointingright w)                        
+  | Wrist(h)    		 where ((fispointingright x) && (jt && st))   given (ispointingright h)                        
+  | Hip(k)      		 where ((fispointingright x) && (jt && st))   given (ispointingright k)                        
+  | Knee(a)     		 where ((fispointingright x) && (jt && st))   given (ispointingright a)                        
+  | Ankle(f)   		     where ((fispointingright x) && (jt && st))   given (ispointingright f)                        
+  | Head()      		 where ((fispointingright x) && (jt && true))                                         
+  | HandTip()  		     where ((fispointingright x) && (jt && st))                                           
+  | Thumb()    		     where ((fispointingright x) && (jt && st))                                           
+  | Foot()     		     where ((fispointingright x) && (jt && st))}
+
+Public Lang ispointingdown : BodyPart
+  { SpineShoulder(l,c,r) where ((fispointingdown y) && (jt && true)) given (ispointingdown l)  (ispointingdown c)  (ispointingdown r) 
+  | Hand(ti,th)     	 where ((fispointingdown y) && (jt && st))   given (ispointingdown ti) (ispointingdown th)           
+  | SpineMid(u,d)        where ((fispointingdown y) && (jt && true)) given (ispointingdown u)  (ispointingdown d)            
+  | SpineBase(l,r)	     where ((fispointingdown y) && (jt && true)) given (ispointingdown l)  (ispointingdown r)            
+  | Neck(h)        	     where ((fispointingdown y) && (jt && true)) given (ispointingdown h)                        
+  | Shoulder(e) 		 where ((fispointingdown y) && (jt && st))   given (ispointingdown e)                        
+  | Elbow(w)    		 where ((fispointingdown y) && (jt && st))   given (ispointingdown w)                        
+  | Wrist(h)    		 where ((fispointingdown y) && (jt && st))   given (ispointingdown h)                        
+  | Hip(k)      		 where ((fispointingdown y) && (jt && st))   given (ispointingdown k)                        
+  | Knee(a)     		 where ((fispointingdown y) && (jt && st))   given (ispointingdown a)                        
+  | Ankle(f)   		     where ((fispointingdown y) && (jt && st))   given (ispointingdown f)                        
+  | Head()      		 where ((fispointingdown y) && (jt && true))                                         
+  | HandTip()  		     where ((fispointingdown y) && (jt && st))                                           
+  | Thumb()    		     where ((fispointingdown y) && (jt && st))                                           
+  | Foot()     		     where ((fispointingdown y) && (jt && st))}
+
+Public Lang ispointingup : BodyPart
+  { SpineShoulder(l,c,r) where ((fispointingup y) && (jt && true)) given (ispointingup l)  (ispointingup c)  (ispointingup r) 
+  | Hand(ti,th)     	 where ((fispointingup y) && (jt && st))   given (ispointingup ti) (ispointingup th)           
+  | SpineMid(u,d)        where ((fispointingup y) && (jt && true)) given (ispointingup u)  (ispointingup d)            
+  | SpineBase(l,r)	     where ((fispointingup y) && (jt && true)) given (ispointingup l)  (ispointingup r)            
+  | Neck(h)        	     where ((fispointingup y) && (jt && true)) given (ispointingup h)                        
+  | Shoulder(e) 		 where ((fispointingup y) && (jt && st))   given (ispointingup e)                        
+  | Elbow(w)    		 where ((fispointingup y) && (jt && st))   given (ispointingup w)                        
+  | Wrist(h)    		 where ((fispointingup y) && (jt && st))   given (ispointingup h)                        
+  | Hip(k)      		 where ((fispointingup y) && (jt && st))   given (ispointingup k)                        
+  | Knee(a)     		 where ((fispointingup y) && (jt && st))   given (ispointingup a)                        
+  | Ankle(f)   		     where ((fispointingup y) && (jt && st))   given (ispointingup f)                        
+  | Head()      		 where ((fispointingup y) && (jt && true))                                         
+  | HandTip()  		     where ((fispointingup y) && (jt && st))                                           
+  | Thumb()    		     where ((fispointingup y) && (jt && st))                                           
+  | Foot()     		     where ((fispointingup y) && (jt && st))}
+
+Public Lang ispointingfront : BodyPart
+  { SpineShoulder(l,c,r) where ((fispointingfront z) && (jt && true)) given (ispointingfront l)  (ispointingfront c)  (ispointingfront r) 
+  | Hand(ti,th)     	 where ((fispointingfront z) && (jt && st))   given (ispointingfront ti) (ispointingfront th)           
+  | SpineMid(u,d)        where ((fispointingfront z) && (jt && true)) given (ispointingfront u)  (ispointingfront d)            
+  | SpineBase(l,r)	     where ((fispointingfront z) && (jt && true)) given (ispointingfront l)  (ispointingfront r)            
+  | Neck(h)        	     where ((fispointingfront z) && (jt && true)) given (ispointingfront h)                        
+  | Shoulder(e) 		 where ((fispointingfront z) && (jt && st))   given (ispointingfront e)                        
+  | Elbow(w)    		 where ((fispointingfront z) && (jt && st))   given (ispointingfront w)                        
+  | Wrist(h)    		 where ((fispointingfront z) && (jt && st))   given (ispointingfront h)                        
+  | Hip(k)      		 where ((fispointingfront z) && (jt && st))   given (ispointingfront k)                        
+  | Knee(a)     		 where ((fispointingfront z) && (jt && st))   given (ispointingfront a)                        
+  | Ankle(f)   		     where ((fispointingfront z) && (jt && st))   given (ispointingfront f)                        
+  | Head()      		 where ((fispointingfront z) && (jt && true))                                         
+  | HandTip()  		     where ((fispointingfront z) && (jt && st))                                           
+  | Thumb()    		     where ((fispointingfront z) && (jt && st))                                           
+  | Foot()     		     where ((fispointingfront z) && (jt && st))}
+
+Public Lang ispointingback : BodyPart
+  { SpineShoulder(l,c,r) where ((fispointingback z) && (jt && true)) given (ispointingback l)  (ispointingback c)  (ispointingback r) 
+  | Hand(ti,th)     	 where ((fispointingback z) && (jt && st))   given (ispointingback ti) (ispointingback th)           
+  | SpineMid(u,d)        where ((fispointingback z) && (jt && true)) given (ispointingback u)  (ispointingback d)            
+  | SpineBase(l,r)	     where ((fispointingback z) && (jt && true)) given (ispointingback l)  (ispointingback r)            
+  | Neck(h)        	     where ((fispointingback z) && (jt && true)) given (ispointingback h)                        
+  | Shoulder(e) 		 where ((fispointingback z) && (jt && st))   given (ispointingback e)                        
+  | Elbow(w)    		 where ((fispointingback z) && (jt && st))   given (ispointingback w)                        
+  | Wrist(h)    		 where ((fispointingback z) && (jt && st))   given (ispointingback h)                        
+  | Hip(k)      		 where ((fispointingback z) && (jt && st))   given (ispointingback k)                        
+  | Knee(a)     		 where ((fispointingback z) && (jt && st))   given (ispointingback a)                        
+  | Ankle(f)   		     where ((fispointingback z) && (jt && st))   given (ispointingback f)                        
+  | Head()      		 where ((fispointingback z) && (jt && true))                                         
+  | HandTip()  		     where ((fispointingback z) && (jt && st))                                           
+  | Thumb()    		     where ((fispointingback z) && (jt && st))                                           
+  | Foot()     		     where ((fispointingback z) && (jt && st))}
+
+  
+
+
+
+
+
+
+
+
+//---------------------------------------------- BODY JOINTS TRANSFORMATIONS ----------------------------------------------//
+
+// Below there are the main transformations used over joints to rotate && position them according to the reference planes
+// Sine && cosine for 15 degrees rotations
+Const sin : real := 0.25
+Const cos : real := 0.96
+
+// f denotes it is a function, rot = rotate, fro = frontal, sag = sagittal, hor = horizontal, clock = clockwise, cclock = counter clockwise
+Fun frotFroClockX  (x:real) (y:real) (z:real):real:= ((x * cos) + (y * sin))
+Fun frotFroClockY  (x:real) (y:real) (z:real):real:= ((x * (0.0 - sin)) + (y * cos))
+Fun frotFroCClockX (x:real) (y:real) (z:real):real:= ((x * cos) + (y * (0.0 - sin)))
+Fun frotFroCClockY (x:real) (y:real) (z:real):real:= ((x * sin) + (y * cos))
+Fun frotSagClockY  (x:real) (y:real) (z:real):real:= ((y * cos) + (z * sin))
+Fun frotSagClockZ  (x:real) (y:real) (z:real):real:= ((y * (0.0 - sin)) + (z * cos))
+Fun frotSagCClockY (x:real) (y:real) (z:real):real:= ((y * cos) + (z * (0.0 - sin)))
+Fun frotSagCClockZ (x:real) (y:real) (z:real):real:= ((y * sin) + (z * cos))
+Fun frotHorClockX  (x:real) (y:real) (z:real):real:= ((x * cos) + (z * sin))
+Fun frotHorClockZ  (x:real) (y:real) (z:real):real:= ((x * (0.0 - sin)) + (z * cos))
+Fun frotHorCClockX (x:real) (y:real) (z:real):real:= ((x * cos) + (z * (0.0 - sin)))
+Fun frotHorCClockZ (x:real) (y:real) (z:real):real:= ((x * sin) + (z * cos))
+
+// Central joints do not need to be checked on st boolean
+// Bug below > jt alone bugs the parser but if I put "and true" it parses successfully
+Public Trans rotFroClock : BodyPart -> BodyPart  
+  { SpineShoulder(l,c,r) where (jt && true) to (SpineShoulder [(frotFroClockX x y z), (frotFroClockY x y z), z, s, jt, st, true] (rotFroClock l)  (rotFroClock c)  (rotFroClock r)) 
+  | Hand(ti,th)     	 where (jt && st)   to (Hand          [(frotFroClockX x y z), (frotFroClockY x y z), z, s, jt, st, true] (rotFroClock ti) (rotFroClock th)                )
+  | SpineMid(u,d)        where (jt && true) to (SpineMid      [(frotFroClockX x y z), (frotFroClockY x y z), z, s, jt, st, true] (rotFroClock u)  (rotFroClock d)                 )
+  | SpineBase(l,r)	     where (jt && true) to (SpineBase     [(frotFroClockX x y z), (frotFroClockY x y z), z, s, jt, st, true] (rotFroClock l)  (rotFroClock r)                 )
+  | Neck(h)        	     where (jt && true) to (Neck          [(frotFroClockX x y z), (frotFroClockY x y z), z, s, jt, st, true] (rotFroClock h)                                  )
+  | Shoulder(e) 		 where (jt && st)   to (Shoulder      [(frotFroClockX x y z), (frotFroClockY x y z), z, s, jt, st, true] (rotFroClock e)                                  )
+  | Elbow(w)    		 where (jt && st)   to (Elbow         [(frotFroClockX x y z), (frotFroClockY x y z), z, s, jt, st, true] (rotFroClock w)                                  )
+  | Wrist(h)    		 where (jt && st)   to (Wrist         [(frotFroClockX x y z), (frotFroClockY x y z), z, s, jt, st, true] (rotFroClock h)                                  )
+  | Hip(k)      		 where (jt && st)   to (Hip           [(frotFroClockX x y z), (frotFroClockY x y z), z, s, jt, st, true] (rotFroClock k)                                  )
+  | Knee(a)     		 where (jt && st)   to (Knee          [(frotFroClockX x y z), (frotFroClockY x y z), z, s, jt, st, true] (rotFroClock a)                                  )
+  | Ankle(f)   		     where (jt && st)   to (Ankle         [(frotFroClockX x y z), (frotFroClockY x y z), z, s, jt, st, true] (rotFroClock f)                                  )
+  | Head()      		 where (jt && true) to (Head          [(frotFroClockX x y z), (frotFroClockY x y z), z, s, jt, st, true]                                                  )
+  | HandTip()  		     where (jt && st)   to (HandTip       [(frotFroClockX x y z), (frotFroClockY x y z), z, s, jt, st, true]                                                  )
+  | Thumb()    		     where (jt && st)   to (Thumb         [(frotFroClockX x y z), (frotFroClockY x y z), z, s, jt, st, true]                                                  )
+  | Foot()     		     where (jt && st)   to (Foot          [(frotFroClockX x y z), (frotFroClockY x y z), z, s, jt, st, true] 					                              )
+  | SpineShoulder(l,c,r) where !(jt && true) to (SpineShoulder [x, y, z, s, jt, st, at] (rotFroClock l)  (rotFroClock c)  (rotFroClock r)) 
+  | Hand(ti,th)     	 where !(jt && st)   to (Hand          [x, y, z, s, jt, st, at] (rotFroClock ti) (rotFroClock th)                )
+  | SpineMid(u,d)        where !(jt && true) to (SpineMid      [x, y, z, s, jt, st, at] (rotFroClock u)  (rotFroClock d)                 )
+  | SpineBase(l,r)	     where !(jt && true) to (SpineBase     [x, y, z, s, jt, st, at] (rotFroClock l)  (rotFroClock r)                 )
+  | Neck(h)        	     where !(jt && true) to (Neck          [x, y, z, s, jt, st, at] (rotFroClock h)                                  )
+  | Shoulder(e) 		 where !(jt && st)   to (Shoulder      [x, y, z, s, jt, st, at] (rotFroClock e)                                  )
+  | Elbow(w)    		 where !(jt && st)   to (Elbow         [x, y, z, s, jt, st, at] (rotFroClock w)                                  )
+  | Wrist(h)    		 where !(jt && st)   to (Wrist         [x, y, z, s, jt, st, at] (rotFroClock h)                                  )
+  | Hip(k)      		 where !(jt && st)   to (Hip           [x, y, z, s, jt, st, at] (rotFroClock k)                                  )
+  | Knee(a)     		 where !(jt && st)   to (Knee          [x, y, z, s, jt, st, at] (rotFroClock a)                                  )
+  | Ankle(f)   		     where !(jt && st)   to (Ankle         [x, y, z, s, jt, st, at] (rotFroClock f)                                  )
+  | Head()      		 where !(jt && true) to (Head          [x, y, z, s, jt, st, at]                                                  )
+  | HandTip()  		     where !(jt && st)   to (HandTip       [x, y, z, s, jt, st, at]                                                  )
+  | Thumb()    		     where !(jt && st)   to (Thumb         [x, y, z, s, jt, st, at]                                                  )
+  | Foot()     		     where !(jt && st)   to (Foot          [x, y, z, s, jt, st, at] 					                             )}
+
+Public Trans rotFroCClock : BodyPart -> BodyPart  
+  { SpineShoulder(l,c,r) where (jt && true) to (SpineShoulder [(frotFroCClockX x y z), (frotFroCClockY x y z), z, s, jt, st, true] (rotFroCClock l)  (rotFroCClock c)  (rotFroCClock r)) 
+  | Hand(ti,th)     	 where (jt && st)   to (Hand          [(frotFroCClockX x y z), (frotFroCClockY x y z), z, s, jt, st, true] (rotFroCClock ti) (rotFroCClock th)                 )
+  | SpineMid(u,d)        where (jt && true) to (SpineMid      [(frotFroCClockX x y z), (frotFroCClockY x y z), z, s, jt, st, true] (rotFroCClock u)  (rotFroCClock d)                  )
+  | SpineBase(l,r)	     where (jt && true) to (SpineBase     [(frotFroCClockX x y z), (frotFroCClockY x y z), z, s, jt, st, true] (rotFroCClock l)  (rotFroCClock r)                  )
+  | Neck(h)        	     where (jt && true) to (Neck          [(frotFroCClockX x y z), (frotFroCClockY x y z), z, s, jt, st, true] (rotFroCClock h)                                    )
+  | Shoulder(e) 		 where (jt && st)   to (Shoulder      [(frotFroCClockX x y z), (frotFroCClockY x y z), z, s, jt, st, true] (rotFroCClock e)                                    )
+  | Elbow(w)    		 where (jt && st)   to (Elbow         [(frotFroCClockX x y z), (frotFroCClockY x y z), z, s, jt, st, true] (rotFroCClock w)                                    )
+  | Wrist(h)    		 where (jt && st)   to (Wrist         [(frotFroCClockX x y z), (frotFroCClockY x y z), z, s, jt, st, true] (rotFroCClock h)                                    )
+  | Hip(k)      		 where (jt && st)   to (Hip           [(frotFroCClockX x y z), (frotFroCClockY x y z), z, s, jt, st, true] (rotFroCClock k)                                    )
+  | Knee(a)     		 where (jt && st)   to (Knee          [(frotFroCClockX x y z), (frotFroCClockY x y z), z, s, jt, st, true] (rotFroCClock a)                                    )
+  | Ankle(f)   		     where (jt && st)   to (Ankle         [(frotFroCClockX x y z), (frotFroCClockY x y z), z, s, jt, st, true] (rotFroCClock f)                                    )
+  | Head()      		 where (jt && true) to (Head          [(frotFroCClockX x y z), (frotFroCClockY x y z), z, s, jt, st, true]                                                     )
+  | HandTip()  		     where (jt && st)   to (HandTip       [(frotFroCClockX x y z), (frotFroCClockY x y z), z, s, jt, st, true]                                                     )
+  | Thumb()    		     where (jt && st)   to (Thumb         [(frotFroCClockX x y z), (frotFroCClockY x y z), z, s, jt, st, true]                                                     )
+  | Foot()     		     where (jt && st)   to (Foot          [(frotFroCClockX x y z), (frotFroCClockY x y z), z, s, jt, st, true] 					                                   )
+  | SpineShoulder(l,c,r) where !(jt && true) to (SpineShoulder [x, y, z, s, jt, st, at] (rotFroCClock l)  (rotFroCClock c)  (rotFroCClock r)) 
+  | Hand(ti,th)     	 where !(jt && st)   to (Hand          [x, y, z, s, jt, st, at] (rotFroCClock ti) (rotFroCClock th)                 )
+  | SpineMid(u,d)        where !(jt && true) to (SpineMid      [x, y, z, s, jt, st, at] (rotFroCClock u)  (rotFroCClock d)                  )
+  | SpineBase(l,r)	     where !(jt && true) to (SpineBase     [x, y, z, s, jt, st, at] (rotFroCClock l)  (rotFroCClock r)                  )
+  | Neck(h)        	     where !(jt && true) to (Neck          [x, y, z, s, jt, st, at] (rotFroCClock h)                                    )
+  | Shoulder(e) 		 where !(jt && st)   to (Shoulder      [x, y, z, s, jt, st, at] (rotFroCClock e)                                    )
+  | Elbow(w)    		 where !(jt && st)   to (Elbow         [x, y, z, s, jt, st, at] (rotFroCClock w)                                    )
+  | Wrist(h)    		 where !(jt && st)   to (Wrist         [x, y, z, s, jt, st, at] (rotFroCClock h)                                    )
+  | Hip(k)      		 where !(jt && st)   to (Hip           [x, y, z, s, jt, st, at] (rotFroCClock k)                                    )
+  | Knee(a)     		 where !(jt && st)   to (Knee          [x, y, z, s, jt, st, at] (rotFroCClock a)                                    )
+  | Ankle(f)   		     where !(jt && st)   to (Ankle         [x, y, z, s, jt, st, at] (rotFroCClock f)                                    )
+  | Head()				 where !(jt && true) to (Head          [x, y, z, s, jt, st, at]                                                     )
+  | HandTip()  		     where !(jt && st)   to (HandTip       [x, y, z, s, jt, st, at]                                                     )
+  | Thumb()    		     where !(jt && st)   to (Thumb         [x, y, z, s, jt, st, at]                                                     )
+  | Foot()     		     where !(jt && st)   to (Foot          [x, y, z, s, jt, st, at] 					                                )}
+
+  
+Public Trans rotSagClock : BodyPart -> BodyPart  
+  { SpineShoulder(l,c,r) where (jt && true) to (SpineShoulder [x, (frotSagClockY x y z), (frotSagClockZ x y z), s, jt, st, true] (rotSagClock l)  (rotSagClock c)  (rotSagClock r)) 
+  | Hand(ti,th)     	 where (jt && st)   to (Hand          [x, (frotSagClockY x y z), (frotSagClockZ x y z), s, jt, st, true] (rotSagClock ti) (rotSagClock th)                )
+  | SpineMid(u,d)        where (jt && true) to (SpineMid      [x, (frotSagClockY x y z), (frotSagClockZ x y z), s, jt, st, true] (rotSagClock u)  (rotSagClock d)                 )
+  | SpineBase(l,r)	     where (jt && true) to (SpineBase     [x, (frotSagClockY x y z), (frotSagClockZ x y z), s, jt, st, true] (rotSagClock l)  (rotSagClock r)                 )
+  | Neck(h)        	     where (jt && true) to (Neck          [x, (frotSagClockY x y z), (frotSagClockZ x y z), s, jt, st, true] (rotSagClock h)                                  )
+  | Shoulder(e) 		 where (jt && st)   to (Shoulder      [x, (frotSagClockY x y z), (frotSagClockZ x y z), s, jt, st, true] (rotSagClock e)                                  )
+  | Elbow(w)    		 where (jt && st)   to (Elbow         [x, (frotSagClockY x y z), (frotSagClockZ x y z), s, jt, st, true] (rotSagClock w)                                  )
+  | Wrist(h)    		 where (jt && st)   to (Wrist         [x, (frotSagClockY x y z), (frotSagClockZ x y z), s, jt, st, true] (rotSagClock h)                                  )
+  | Hip(k)      		 where (jt && st)   to (Hip           [x, (frotSagClockY x y z), (frotSagClockZ x y z), s, jt, st, true] (rotSagClock k)                                  )
+  | Knee(a)     		 where (jt && st)   to (Knee          [x, (frotSagClockY x y z), (frotSagClockZ x y z), s, jt, st, true] (rotSagClock a)                                  )
+  | Ankle(f)   		     where (jt && st)   to (Ankle         [x, (frotSagClockY x y z), (frotSagClockZ x y z), s, jt, st, true] (rotSagClock f)                                  )
+  | Head()      		 where (jt && true) to (Head          [x, (frotSagClockY x y z), (frotSagClockZ x y z), s, jt, st, true]                                                  )
+  | HandTip()  		     where (jt && st)   to (HandTip       [x, (frotSagClockY x y z), (frotSagClockZ x y z), s, jt, st, true]                                                  )
+  | Thumb()    		     where (jt && st)   to (Thumb         [x, (frotSagClockY x y z), (frotSagClockZ x y z), s, jt, st, true]                                                  )
+  | Foot()     		     where (jt && st)   to (Foot          [x, (frotSagClockY x y z), (frotSagClockZ x y z), s, jt, st, true] 					                              )
+  | SpineShoulder(l,c,r) where !(jt && true) to (SpineShoulder [x, y, z, s, jt, st, at] (rotSagClock l)  (rotSagClock c)  (rotSagClock r)) 
+  | Hand(ti,th)     	 where !(jt && st)   to (Hand          [x, y, z, s, jt, st, at] (rotSagClock ti) (rotSagClock th)                )
+  | SpineMid(u,d)        where !(jt && true) to (SpineMid      [x, y, z, s, jt, st, at] (rotSagClock u)  (rotSagClock d)                 )
+  | SpineBase(l,r)	     where !(jt && true) to (SpineBase     [x, y, z, s, jt, st, at] (rotSagClock l)  (rotSagClock r)                 )
+  | Neck(h)        	     where !(jt && true) to (Neck          [x, y, z, s, jt, st, at] (rotSagClock h)                                  )
+  | Shoulder(e) 		 where !(jt && st)   to (Shoulder      [x, y, z, s, jt, st, at] (rotSagClock e)                                  )
+  | Elbow(w)    		 where !(jt && st)   to (Elbow         [x, y, z, s, jt, st, at] (rotSagClock w)                                  )
+  | Wrist(h)    		 where !(jt && st)   to (Wrist         [x, y, z, s, jt, st, at] (rotSagClock h)                                  )
+  | Hip(k)      		 where !(jt && st)   to (Hip           [x, y, z, s, jt, st, at] (rotSagClock k)                                  )
+  | Knee(a)     		 where !(jt && st)   to (Knee          [x, y, z, s, jt, st, at] (rotSagClock a)                                  )
+  | Ankle(f)   		     where !(jt && st)   to (Ankle         [x, y, z, s, jt, st, at] (rotSagClock f)                                  )
+  | Head()      	     where !(jt && true) to (Head          [x, y, z, s, jt, st, at]                                                  )
+  | HandTip()  		     where !(jt && st)   to (HandTip       [x, y, z, s, jt, st, at]                                                  )
+  | Thumb()    		     where !(jt && st)   to (Thumb         [x, y, z, s, jt, st, at]                                                  )
+  | Foot()     		     where !(jt && st)   to (Foot          [x, y, z, s, jt, st, at] 					                             )}
+
+
+Public Trans rotSagCClock : BodyPart -> BodyPart  
+  { SpineShoulder(l,c,r) where (jt && true) to (SpineShoulder [x, (frotSagCClockY x y z), (frotSagCClockZ x y z), s, jt, st, true] (rotSagCClock l)  (rotSagCClock c)  (rotSagCClock r)) 
+  | Hand(ti,th)     	 where (jt && st)   to (Hand          [x, (frotSagCClockY x y z), (frotSagCClockZ x y z), s, jt, st, true] (rotSagCClock ti) (rotSagCClock th)                 )
+  | SpineMid(u,d)        where (jt && true) to (SpineMid      [x, (frotSagCClockY x y z), (frotSagCClockZ x y z), s, jt, st, true] (rotSagCClock u)  (rotSagCClock d)                  )
+  | SpineBase(l,r)	     where (jt && true) to (SpineBase     [x, (frotSagCClockY x y z), (frotSagCClockZ x y z), s, jt, st, true] (rotSagCClock l)  (rotSagCClock r)                  )
+  | Neck(h)        	     where (jt && true) to (Neck          [x, (frotSagCClockY x y z), (frotSagCClockZ x y z), s, jt, st, true] (rotSagCClock h)                                    )
+  | Shoulder(e) 		 where (jt && st)   to (Shoulder      [x, (frotSagCClockY x y z), (frotSagCClockZ x y z), s, jt, st, true] (rotSagCClock e)                                    )
+  | Elbow(w)    		 where (jt && st)   to (Elbow         [x, (frotSagCClockY x y z), (frotSagCClockZ x y z), s, jt, st, true] (rotSagCClock w)                                    )
+  | Wrist(h)    		 where (jt && st)   to (Wrist         [x, (frotSagCClockY x y z), (frotSagCClockZ x y z), s, jt, st, true] (rotSagCClock h)                                    )
+  | Hip(k)      		 where (jt && st)   to (Hip           [x, (frotSagCClockY x y z), (frotSagCClockZ x y z), s, jt, st, true] (rotSagCClock k)                                    )
+  | Knee(a)     		 where (jt && st)   to (Knee          [x, (frotSagCClockY x y z), (frotSagCClockZ x y z), s, jt, st, true] (rotSagCClock a)                                    )
+  | Ankle(f)   		     where (jt && st)   to (Ankle         [x, (frotSagCClockY x y z), (frotSagCClockZ x y z), s, jt, st, true] (rotSagCClock f)                                    )
+  | Head()      		 where (jt && true) to (Head          [x, (frotSagCClockY x y z), (frotSagCClockZ x y z), s, jt, st, true]                                                     )
+  | HandTip()  		     where (jt && st)   to (HandTip       [x, (frotSagCClockY x y z), (frotSagCClockZ x y z), s, jt, st, true]                                                     )
+  | Thumb()    		     where (jt && st)   to (Thumb         [x, (frotSagCClockY x y z), (frotSagCClockZ x y z), s, jt, st, true]                                                     )
+  | Foot()     		     where (jt && st)   to (Foot          [x, (frotSagCClockY x y z), (frotSagCClockZ x y z), s, jt, st, true] 					                                   )
+  | SpineShoulder(l,c,r) where !(jt && true) to (SpineShoulder [x, y, z, s, jt, st, at] (rotSagCClock l)  (rotSagCClock c)  (rotSagCClock r)) 
+  | Hand(ti,th)     	 where !(jt && st)   to (Hand          [x, y, z, s, jt, st, at] (rotSagCClock ti) (rotSagCClock th)                 )
+  | SpineMid(u,d)        where !(jt && true) to (SpineMid      [x, y, z, s, jt, st, at] (rotSagCClock u)  (rotSagCClock d)                  )
+  | SpineBase(l,r)	     where !(jt && true) to (SpineBase     [x, y, z, s, jt, st, at] (rotSagCClock l)  (rotSagCClock r)                  )
+  | Neck(h)        	     where !(jt && true) to (Neck          [x, y, z, s, jt, st, at] (rotSagCClock h)                                    )
+  | Shoulder(e) 		 where !(jt && st)   to (Shoulder      [x, y, z, s, jt, st, at] (rotSagCClock e)                                    )
+  | Elbow(w)    		 where !(jt && st)   to (Elbow         [x, y, z, s, jt, st, at] (rotSagCClock w)                                    )
+  | Wrist(h)    		 where !(jt && st)   to (Wrist         [x, y, z, s, jt, st, at] (rotSagCClock h)                                    )
+  | Hip(k)      		 where !(jt && st)   to (Hip           [x, y, z, s, jt, st, at] (rotSagCClock k)                                    )
+  | Knee(a)     		 where !(jt && st)   to (Knee          [x, y, z, s, jt, st, at] (rotSagCClock a)                                    )
+  | Ankle(f)   		     where !(jt && st)   to (Ankle         [x, y, z, s, jt, st, at] (rotSagCClock f)                                    )
+  | Head()      		 where !(jt && true) to (Head          [x, y, z, s, jt, st, at]                                                     )
+  | HandTip()  		     where !(jt && st)   to (HandTip       [x, y, z, s, jt, st, at]                                                     )
+  | Thumb()    		     where !(jt && st)   to (Thumb         [x, y, z, s, jt, st, at]                                                     )
+  | Foot()     		     where !(jt && st)   to (Foot          [x, y, z, s, jt, st, at] 					                                )}
+	 
+Public Trans rotHorClock : BodyPart -> BodyPart  
+  { SpineShoulder(l,c,r) where (jt && true) to (SpineShoulder [(frotHorClockX x y z), y, (frotHorClockZ x y z), s, jt, st, true] (rotHorClock l)  (rotHorClock c)  (rotHorClock r)) 
+  | Hand(ti,th)     	 where (jt && st)   to (Hand          [(frotHorClockX x y z), y, (frotHorClockZ x y z), s, jt, st, true] (rotHorClock ti) (rotHorClock th)                )
+  | SpineMid(u,d)        where (jt && true) to (SpineMid      [(frotHorClockX x y z), y, (frotHorClockZ x y z), s, jt, st, true] (rotHorClock u)  (rotHorClock d)                 )
+  | SpineBase(l,r)	     where (jt && true) to (SpineBase     [(frotHorClockX x y z), y, (frotHorClockZ x y z), s, jt, st, true] (rotHorClock l)  (rotHorClock r)                 )
+  | Neck(h)        	     where (jt && true) to (Neck          [(frotHorClockX x y z), y, (frotHorClockZ x y z), s, jt, st, true] (rotHorClock h)                                  )
+  | Shoulder(e) 		 where (jt && st)   to (Shoulder      [(frotHorClockX x y z), y, (frotHorClockZ x y z), s, jt, st, true] (rotHorClock e)                                  )
+  | Elbow(w)    		 where (jt && st)   to (Elbow         [(frotHorClockX x y z), y, (frotHorClockZ x y z), s, jt, st, true] (rotHorClock w)                                  )
+  | Wrist(h)    		 where (jt && st)   to (Wrist         [(frotHorClockX x y z), y, (frotHorClockZ x y z), s, jt, st, true] (rotHorClock h)                                  )
+  | Hip(k)      		 where (jt && st)   to (Hip           [(frotHorClockX x y z), y, (frotHorClockZ x y z), s, jt, st, true] (rotHorClock k)                                  )
+  | Knee(a)     		 where (jt && st)   to (Knee          [(frotHorClockX x y z), y, (frotHorClockZ x y z), s, jt, st, true] (rotHorClock a)                                  )
+  | Ankle(f)   		     where (jt && st)   to (Ankle         [(frotHorClockX x y z), y, (frotHorClockZ x y z), s, jt, st, true] (rotHorClock f)                                  )
+  | Head()      		 where (jt && true) to (Head          [(frotHorClockX x y z), y, (frotHorClockZ x y z), s, jt, st, true]                                                  )
+  | HandTip()  		     where (jt && st)   to (HandTip       [(frotHorClockX x y z), y, (frotHorClockZ x y z), s, jt, st, true]                                                  )
+  | Thumb()    		     where (jt && st)   to (Thumb         [(frotHorClockX x y z), y, (frotHorClockZ x y z), s, jt, st, true]                                                  )
+  | Foot()     		     where (jt && st)   to (Foot          [(frotHorClockX x y z), y, (frotHorClockZ x y z), s, jt, st, true] 					                              )
+  | SpineShoulder(l,c,r) where !(jt && true) to (SpineShoulder [x, y, z, s, jt, st, at] (rotHorClock l)  (rotHorClock c)  (rotHorClock r)) 
+  | Hand(ti,th)     	 where !(jt && st)   to (Hand          [x, y, z, s, jt, st, at] (rotHorClock ti) (rotHorClock th)                )
+  | SpineMid(u,d)        where !(jt && true) to (SpineMid      [x, y, z, s, jt, st, at] (rotHorClock u)  (rotHorClock d)                 )
+  | SpineBase(l,r)	     where !(jt && true) to (SpineBase     [x, y, z, s, jt, st, at] (rotHorClock l)  (rotHorClock r)                 )
+  | Neck(h)        	     where !(jt && true) to (Neck          [x, y, z, s, jt, st, at] (rotHorClock h)                                  )
+  | Shoulder(e) 		 where !(jt && st)   to (Shoulder      [x, y, z, s, jt, st, at] (rotHorClock e)                                  )
+  | Elbow(w)    		 where !(jt && st)   to (Elbow         [x, y, z, s, jt, st, at] (rotHorClock w)                                  )
+  | Wrist(h)    		 where !(jt && st)   to (Wrist         [x, y, z, s, jt, st, at] (rotHorClock h)                                  )
+  | Hip(k)      		 where !(jt && st)   to (Hip           [x, y, z, s, jt, st, at] (rotHorClock k)                                  )
+  | Knee(a)     		 where !(jt && st)   to (Knee          [x, y, z, s, jt, st, at] (rotHorClock a)                                  )
+  | Ankle(f)   		     where !(jt && st)   to (Ankle         [x, y, z, s, jt, st, at] (rotHorClock f)                                  )
+  | Head()      		 where !(jt && true) to (Head          [x, y, z, s, jt, st, at]                                                  )
+  | HandTip()  		     where !(jt && st)   to (HandTip       [x, y, z, s, jt, st, at]                                                  )
+  | Thumb()    		     where !(jt && st)   to (Thumb         [x, y, z, s, jt, st, at]                                                  )
+  | Foot()     		     where !(jt && st)   to (Foot          [x, y, z, s, jt, st, at] 					                             )}
+
+Public Trans rotHorCClock : BodyPart -> BodyPart  
+  { SpineShoulder(l,c,r) where (jt && true) to (SpineShoulder [(frotHorCClockX x y z), y, (frotHorCClockZ x y z), s, jt, st, true] (rotHorCClock l)  (rotHorCClock c)  (rotHorCClock r)) 
+  | Hand(ti,th)     	 where (jt && st)   to (Hand          [(frotHorCClockX x y z), y, (frotHorCClockZ x y z), s, jt, st, true] (rotHorCClock ti) (rotHorCClock th)                 )
+  | SpineMid(u,d)        where (jt && true) to (SpineMid      [(frotHorCClockX x y z), y, (frotHorCClockZ x y z), s, jt, st, true] (rotHorCClock u)  (rotHorCClock d)                  )
+  | SpineBase(l,r)	     where (jt && true) to (SpineBase     [(frotHorCClockX x y z), y, (frotHorCClockZ x y z), s, jt, st, true] (rotHorCClock l)  (rotHorCClock r)                  )
+  | Neck(h)        	     where (jt && true) to (Neck          [(frotHorCClockX x y z), y, (frotHorCClockZ x y z), s, jt, st, true] (rotHorCClock h)                                    )
+  | Shoulder(e) 		 where (jt && st)   to (Shoulder      [(frotHorCClockX x y z), y, (frotHorCClockZ x y z), s, jt, st, true] (rotHorCClock e)                                    )
+  | Elbow(w)    		 where (jt && st)   to (Elbow         [(frotHorCClockX x y z), y, (frotHorCClockZ x y z), s, jt, st, true] (rotHorCClock w)                                    )
+  | Wrist(h)    		 where (jt && st)   to (Wrist         [(frotHorCClockX x y z), y, (frotHorCClockZ x y z), s, jt, st, true] (rotHorCClock h)                                    )
+  | Hip(k)      		 where (jt && st)   to (Hip           [(frotHorCClockX x y z), y, (frotHorCClockZ x y z), s, jt, st, true] (rotHorCClock k)                                    )
+  | Knee(a)     		 where (jt && st)   to (Knee          [(frotHorCClockX x y z), y, (frotHorCClockZ x y z), s, jt, st, true] (rotHorCClock a)                                    )
+  | Ankle(f)   		     where (jt && st)   to (Ankle         [(frotHorCClockX x y z), y, (frotHorCClockZ x y z), s, jt, st, true] (rotHorCClock f)                                    )
+  | Head()      		 where (jt && true) to (Head          [(frotHorCClockX x y z), y, (frotHorCClockZ x y z), s, jt, st, true]                                                     )
+  | HandTip()  		     where (jt && st)   to (HandTip       [(frotHorCClockX x y z), y, (frotHorCClockZ x y z), s, jt, st, true]                                                     )
+  | Thumb()    		     where (jt && st)   to (Thumb         [(frotHorCClockX x y z), y, (frotHorCClockZ x y z), s, jt, st, true]                                                     )
+  | Foot()     		     where (jt && st)   to (Foot          [(frotHorCClockX x y z), y, (frotHorCClockZ x y z), s, jt, st, true] 					                                   )
+  | SpineShoulder(l,c,r) where !(jt && true) to (SpineShoulder [x, y, z, s, jt, st, at] (rotHorCClock l)  (rotHorCClock c)  (rotHorCClock r)) 
+  | Hand(ti,th)     	 where !(jt && st)   to (Hand          [x, y, z, s, jt, st, at] (rotHorCClock ti) (rotHorCClock th)                 )
+  | SpineMid(u,d)        where !(jt && true) to (SpineMid      [x, y, z, s, jt, st, at] (rotHorCClock u)  (rotHorCClock d)                  )
+  | SpineBase(l,r)	     where !(jt && true) to (SpineBase     [x, y, z, s, jt, st, at] (rotHorCClock l)  (rotHorCClock r)                  )
+  | Neck(h)        	     where !(jt && true) to (Neck          [x, y, z, s, jt, st, at] (rotHorCClock h)                                    )
+  | Shoulder(e) 		 where !(jt && st)   to (Shoulder      [x, y, z, s, jt, st, at] (rotHorCClock e)                                    )
+  | Elbow(w)    		 where !(jt && st)   to (Elbow         [x, y, z, s, jt, st, at] (rotHorCClock w)                                    )
+  | Wrist(h)    		 where !(jt && st)   to (Wrist         [x, y, z, s, jt, st, at] (rotHorCClock h)                                    )
+  | Hip(k)      		 where !(jt && st)   to (Hip           [x, y, z, s, jt, st, at] (rotHorCClock k)                                    )
+  | Knee(a)     		 where !(jt && st)   to (Knee          [x, y, z, s, jt, st, at] (rotHorCClock a)                                    )
+  | Ankle(f)   		     where !(jt && st)   to (Ankle         [x, y, z, s, jt, st, at] (rotHorCClock f)                                    )
+  | Head()      		 where !(jt && true) to (Head          [x, y, z, s, jt, st, at]                                                     )
+  | HandTip()  		     where !(jt && st)   to (HandTip       [x, y, z, s, jt, st, at]                                                     )
+  | Thumb()    		     where !(jt && st)   to (Thumb         [x, y, z, s, jt, st, at]                                                     )
+  | Foot()     		     where !(jt && st)   to (Foot          [x, y, z, s, jt, st, at] 					                                )}
+
+Public Trans todown : BodyPart -> BodyPart  
+  { SpineShoulder(l,c,r) where (jt && true) to (SpineShoulder [0.0, 0.0 - 1.0, 0.0, s, jt, st, true] (todown l)  (todown c)  (todown r)) 
+  | Hand(ti,th)			 where (jt && st)   to (Hand          [0.0, 0.0 - 1.0, 0.0, s, jt, st, true] (todown ti) (todown th))
+  | SpineMid(u,d)        where (jt && true) to (SpineMid      [0.0, 0.0 - 1.0, 0.0, s, jt, st, true] (todown u)  (todown d))
+  | SpineBase(l,r)	     where (jt && true) to (SpineBase     [0.0, 0.0 - 1.0, 0.0, s, jt, st, true] (todown l)  (todown r))
+  | Neck(h)        	     where (jt && true) to (Neck          [0.0, 0.0 - 1.0, 0.0, s, jt, st, true] (todown h))
+  | Shoulder(e) 		 where (jt && st)   to (Shoulder      [0.0, 0.0 - 1.0, 0.0, s, jt, st, true] (todown e))
+  | Elbow(w)    		 where (jt && st)   to (Elbow         [0.0, 0.0 - 1.0, 0.0, s, jt, st, true] (todown w))
+  | Wrist(h)    		 where (jt && st)   to (Wrist         [0.0, 0.0 - 1.0, 0.0, s, jt, st, true] (todown h))
+  | Hip(k)      		 where (jt && st)   to (Hip           [0.0, 0.0 - 1.0, 0.0, s, jt, st, true] (todown k))
+  | Knee(a)     		 where (jt && st)   to (Knee          [0.0, 0.0 - 1.0, 0.0, s, jt, st, true] (todown a))
+  | Ankle(f)   		     where (jt && st)   to (Ankle         [0.0, 0.0 - 1.0, 0.0, s, jt, st, true] (todown f))
+  | Head()      		 where (jt && true) to (Head          [0.0, 0.0 - 1.0, 0.0, s, jt, st, true])
+  | HandTip()  		     where (jt && st)   to (HandTip       [0.0, 0.0 - 1.0, 0.0, s, jt, st, true])
+  | Thumb()    		     where (jt && st)   to (Thumb         [0.0, 0.0 - 1.0, 0.0, s, jt, st, true])
+  | Foot()     		     where (jt && st)   to (Foot          [0.0, 0.0 - 1.0, 0.0, s, jt, st, true])
+  | SpineShoulder(l,c,r) where !(jt && true) to (SpineShoulder [x, y, z, s, jt, st, at] (todown l)  (todown c)  (todown r)) 
+  | Hand(ti,th)     	 where !(jt && st)   to (Hand          [x, y, z, s, jt, st, at] (todown ti) (todown th))
+  | SpineMid(u,d)        where !(jt && true) to (SpineMid      [x, y, z, s, jt, st, at] (todown u)  (todown d))
+  | SpineBase(l,r)	     where !(jt && true) to (SpineBase     [x, y, z, s, jt, st, at] (todown l)  (todown r))
+  | Neck(h)        	     where !(jt && true) to (Neck          [x, y, z, s, jt, st, at] (todown h))
+  | Shoulder(e) 		 where !(jt && st)   to (Shoulder      [x, y, z, s, jt, st, at] (todown e))
+  | Elbow(w)    		 where !(jt && st)   to (Elbow         [x, y, z, s, jt, st, at] (todown w))
+  | Wrist(h)    		 where !(jt && st)   to (Wrist         [x, y, z, s, jt, st, at] (todown h))
+  | Hip(k)      		 where !(jt && st)   to (Hip           [x, y, z, s, jt, st, at] (todown k))
+  | Knee(a)     		 where !(jt && st)   to (Knee          [x, y, z, s, jt, st, at] (todown a))
+  | Ankle(f)   		     where !(jt && st)   to (Ankle         [x, y, z, s, jt, st, at] (todown f))
+  | Head()      		 where !(jt && true) to (Head          [x, y, z, s, jt, st, at])
+  | HandTip()  		     where !(jt && st)   to (HandTip       [x, y, z, s, jt, st, at])
+  | Thumb()    		     where !(jt && st)   to (Thumb         [x, y, z, s, jt, st, at])
+  | Foot()     		     where !(jt && st)   to (Foot          [x, y, z, s, jt, st, at])}
+
+Public Trans toup : BodyPart -> BodyPart  
+  { SpineShoulder(l,c,r) where (jt && true) to (SpineShoulder [0.0, 1.0, 0.0, s, jt, st, true] (toup l)  (toup c)  (toup r)) 
+  | Hand(ti,th)     	 where (jt && st)   to (Hand          [0.0, 1.0, 0.0, s, jt, st, true] (toup ti) (toup th))
+  | SpineMid(u,d)        where (jt && true) to (SpineMid      [0.0, 1.0, 0.0, s, jt, st, true] (toup u)  (toup d))
+  | SpineBase(l,r)	     where (jt && true) to (SpineBase     [0.0, 1.0, 0.0, s, jt, st, true] (toup l)  (toup r))
+  | Neck(h)        	     where (jt && true) to (Neck          [0.0, 1.0, 0.0, s, jt, st, true] (toup h))
+  | Shoulder(e) 		 where (jt && st)   to (Shoulder      [0.0, 1.0, 0.0, s, jt, st, true] (toup e))
+  | Elbow(w)    		 where (jt && st)   to (Elbow         [0.0, 1.0, 0.0, s, jt, st, true] (toup w))
+  | Wrist(h)    		 where (jt && st)   to (Wrist         [0.0, 1.0, 0.0, s, jt, st, true] (toup h))
+  | Hip(k)      		 where (jt && st)   to (Hip           [0.0, 1.0, 0.0, s, jt, st, true] (toup k))
+  | Knee(a)     		 where (jt && st)   to (Knee          [0.0, 1.0, 0.0, s, jt, st, true] (toup a))
+  | Ankle(f)   		     where (jt && st)   to (Ankle         [0.0, 1.0, 0.0, s, jt, st, true] (toup f))
+  | Head()      		 where (jt && true) to (Head          [0.0, 1.0, 0.0, s, jt, st, true])
+  | HandTip()  		     where (jt && st)   to (HandTip       [0.0, 1.0, 0.0, s, jt, st, true])
+  | Thumb()    		     where (jt && st)   to (Thumb         [0.0, 1.0, 0.0, s, jt, st, true])
+  | Foot()     		     where (jt && st)   to (Foot          [0.0, 1.0, 0.0, s, jt, st, true])
+  | SpineShoulder(l,c,r) where !(jt && true) to (SpineShoulder [x, y, z, s, jt, st, at] (toup l)  (toup c)  (toup r)) 
+  | Hand(ti,th)     	 where !(jt && st)   to (Hand          [x, y, z, s, jt, st, at] (toup ti) (toup th))
+  | SpineMid(u,d)        where !(jt && true) to (SpineMid      [x, y, z, s, jt, st, at] (toup u)  (toup d))
+  | SpineBase(l,r)	     where !(jt && true) to (SpineBase     [x, y, z, s, jt, st, at] (toup l)  (toup r))
+  | Neck(h)        	     where !(jt && true) to (Neck          [x, y, z, s, jt, st, at] (toup h))
+  | Shoulder(e) 		 where !(jt && st)   to (Shoulder      [x, y, z, s, jt, st, at] (toup e))
+  | Elbow(w)    		 where !(jt && st)   to (Elbow         [x, y, z, s, jt, st, at] (toup w))
+  | Wrist(h)    		 where !(jt && st)   to (Wrist         [x, y, z, s, jt, st, at] (toup h))
+  | Hip(k)      		 where !(jt && st)   to (Hip           [x, y, z, s, jt, st, at] (toup k))
+  | Knee(a)     		 where !(jt && st)   to (Knee          [x, y, z, s, jt, st, at] (toup a))
+  | Ankle(f)   		     where !(jt && st)   to (Ankle         [x, y, z, s, jt, st, at] (toup f))
+  | Head()      		 where !(jt && true) to (Head          [x, y, z, s, jt, st, at])
+  | HandTip()  		     where !(jt && st)   to (HandTip       [x, y, z, s, jt, st, at])
+  | Thumb()    		     where !(jt && st)   to (Thumb         [x, y, z, s, jt, st, at])
+  | Foot()     		     where !(jt && st)   to (Foot          [x, y, z, s, jt, st, at])}
+
+Public Trans tofront : BodyPart -> BodyPart  
+  { SpineShoulder(l,c,r) where (jt && true) to (SpineShoulder [0.0, 0.0, 1.0, s, jt, st, true] (tofront l)  (tofront c)  (tofront r)) 
+  | Hand(ti,th)     	 where (jt && st)   to (Hand          [0.0, 0.0, 1.0, s, jt, st, true] (tofront ti) (tofront th))
+  | SpineMid(u,d)        where (jt && true) to (SpineMid      [0.0, 0.0, 1.0, s, jt, st, true] (tofront u)  (tofront d))
+  | SpineBase(l,r)	     where (jt && true) to (SpineBase     [0.0, 0.0, 1.0, s, jt, st, true] (tofront l)  (tofront r))
+  | Neck(h)        	     where (jt && true) to (Neck          [0.0, 0.0, 1.0, s, jt, st, true] (tofront h))
+  | Shoulder(e) 		 where (jt && st)   to (Shoulder      [0.0, 0.0, 1.0, s, jt, st, true] (tofront e))
+  | Elbow(w)    		 where (jt && st)   to (Elbow         [0.0, 0.0, 1.0, s, jt, st, true] (tofront w))
+  | Wrist(h)    		 where (jt && st)   to (Wrist         [0.0, 0.0, 1.0, s, jt, st, true] (tofront h))
+  | Hip(k)      		 where (jt && st)   to (Hip           [0.0, 0.0, 1.0, s, jt, st, true] (tofront k))
+  | Knee(a)     		 where (jt && st)   to (Knee          [0.0, 0.0, 1.0, s, jt, st, true] (tofront a))
+  | Ankle(f)   		     where (jt && st)   to (Ankle         [0.0, 0.0, 1.0, s, jt, st, true] (tofront f))
+  | Head()      		 where (jt && true) to (Head          [0.0, 0.0, 1.0, s, jt, st, true])
+  | HandTip()  		     where (jt && st)   to (HandTip       [0.0, 0.0, 1.0, s, jt, st, true])
+  | Thumb()    		     where (jt && st)   to (Thumb         [0.0, 0.0, 1.0, s, jt, st, true])
+  | Foot()     		     where (jt && st)   to (Foot          [0.0, 0.0, 1.0, s, jt, st, true])
+  | SpineShoulder(l,c,r) where !(jt && true) to (SpineShoulder [x, y, z, s, jt, st, at] (tofront l)  (tofront c)  (tofront r)) 
+  | Hand(ti,th)     	 where !(jt && st)   to (Hand          [x, y, z, s, jt, st, at] (tofront ti) (tofront th))
+  | SpineMid(u,d)        where !(jt && true) to (SpineMid      [x, y, z, s, jt, st, at] (tofront u)  (tofront d))
+  | SpineBase(l,r)	     where !(jt && true) to (SpineBase     [x, y, z, s, jt, st, at] (tofront l)  (tofront r))
+  | Neck(h)        	     where !(jt && true) to (Neck          [x, y, z, s, jt, st, at] (tofront h))
+  | Shoulder(e) 		 where !(jt && st)   to (Shoulder      [x, y, z, s, jt, st, at] (tofront e))
+  | Elbow(w)    		 where !(jt && st)   to (Elbow         [x, y, z, s, jt, st, at] (tofront w))
+  | Wrist(h)    		 where !(jt && st)   to (Wrist         [x, y, z, s, jt, st, at] (tofront h))
+  | Hip(k)      		 where !(jt && st)   to (Hip           [x, y, z, s, jt, st, at] (tofront k))
+  | Knee(a)     		 where !(jt && st)   to (Knee          [x, y, z, s, jt, st, at] (tofront a))
+  | Ankle(f)   		     where !(jt && st)   to (Ankle         [x, y, z, s, jt, st, at] (tofront f))
+  | Head()      		 where !(jt && true) to (Head          [x, y, z, s, jt, st, at])
+  | HandTip()  		     where !(jt && st)   to (HandTip       [x, y, z, s, jt, st, at])
+  | Thumb()    		     where !(jt && st)   to (Thumb         [x, y, z, s, jt, st, at])
+  | Foot()     		     where !(jt && st)   to (Foot          [x, y, z, s, jt, st, at])}
+
+Public Trans toleft : BodyPart -> BodyPart  
+  { SpineShoulder(l,c,r) where (jt && true) to (SpineShoulder [0.0 - 1.0, 0.0, 0.0, s, jt, st, true] (toleft l)  (toleft c)  (toleft r)) 
+  | Hand(ti,th)     	 where (jt && st)   to (Hand          [0.0 - 1.0, 0.0, 0.0, s, jt, st, true] (toleft ti) (toleft th))
+  | SpineMid(u,d)        where (jt && true) to (SpineMid      [0.0 - 1.0, 0.0, 0.0, s, jt, st, true] (toleft u)  (toleft d))
+  | SpineBase(l,r)	     where (jt && true) to (SpineBase     [0.0 - 1.0, 0.0, 0.0, s, jt, st, true] (toleft l)  (toleft r))
+  | Neck(h)        	     where (jt && true) to (Neck          [0.0 - 1.0, 0.0, 0.0, s, jt, st, true] (toleft h))
+  | Shoulder(e) 		 where (jt && st)   to (Shoulder      [0.0 - 1.0, 0.0, 0.0, s, jt, st, true] (toleft e))
+  | Elbow(w)    		 where (jt && st)   to (Elbow         [0.0 - 1.0, 0.0, 0.0, s, jt, st, true] (toleft w))
+  | Wrist(h)    		 where (jt && st)   to (Wrist         [0.0 - 1.0, 0.0, 0.0, s, jt, st, true] (toleft h))
+  | Hip(k)      		 where (jt && st)   to (Hip           [0.0 - 1.0, 0.0, 0.0, s, jt, st, true] (toleft k))
+  | Knee(a)     		 where (jt && st)   to (Knee          [0.0 - 1.0, 0.0, 0.0, s, jt, st, true] (toleft a))
+  | Ankle(f)   		     where (jt && st)   to (Ankle         [0.0 - 1.0, 0.0, 0.0, s, jt, st, true] (toleft f))
+  | Head()      		 where (jt && true) to (Head          [0.0 - 1.0, 0.0, 0.0, s, jt, st, true])
+  | HandTip()  		     where (jt && st)   to (HandTip       [0.0 - 1.0, 0.0, 0.0, s, jt, st, true])
+  | Thumb()    		     where (jt && st)   to (Thumb         [0.0 - 1.0, 0.0, 0.0, s, jt, st, true])
+  | Foot()     		     where (jt && st)   to (Foot          [0.0 - 1.0, 0.0, 0.0, s, jt, st, true])
+  | SpineShoulder(l,c,r) where !(jt && true) to (SpineShoulder [x, y, z, s, jt, st, at] (toleft l)  (toleft c)  (toleft r)) 
+  | Hand(ti,th)     	 where !(jt && st)   to (Hand          [x, y, z, s, jt, st, at] (toleft ti) (toleft th))
+  | SpineMid(u,d)        where !(jt && true) to (SpineMid      [x, y, z, s, jt, st, at] (toleft u)  (toleft d))
+  | SpineBase(l,r)	     where !(jt && true) to (SpineBase     [x, y, z, s, jt, st, at] (toleft l)  (toleft r))
+  | Neck(h)        	     where !(jt && true) to (Neck          [x, y, z, s, jt, st, at] (toleft h))
+  | Shoulder(e) 		 where !(jt && st)   to (Shoulder      [x, y, z, s, jt, st, at] (toleft e))
+  | Elbow(w)    		 where !(jt && st)   to (Elbow         [x, y, z, s, jt, st, at] (toleft w))
+  | Wrist(h)    		 where !(jt && st)   to (Wrist         [x, y, z, s, jt, st, at] (toleft h))
+  | Hip(k)      		 where !(jt && st)   to (Hip           [x, y, z, s, jt, st, at] (toleft k))
+  | Knee(a)     		 where !(jt && st)   to (Knee          [x, y, z, s, jt, st, at] (toleft a))
+  | Ankle(f)   		     where !(jt && st)   to (Ankle         [x, y, z, s, jt, st, at] (toleft f))
+  | Head()      		 where !(jt && true) to (Head          [x, y, z, s, jt, st, at])
+  | HandTip()  		     where !(jt && st)   to (HandTip       [x, y, z, s, jt, st, at])
+  | Thumb()    		     where !(jt && st)   to (Thumb         [x, y, z, s, jt, st, at])
+  | Foot()     		     where !(jt && st)   to (Foot          [x, y, z, s, jt, st, at])}
+
+Public Trans toright : BodyPart -> BodyPart  
+  { SpineShoulder(l,c,r) where (jt && true) to (SpineShoulder [1.0, 0.0, 0.0, s, jt, st, true] (toright l)  (toright c)  (toright r)) 
+  | Hand(ti,th)     	 where (jt && st)   to (Hand          [1.0, 0.0, 0.0, s, jt, st, true] (toright ti) (toright th))
+  | SpineMid(u,d)        where (jt && true) to (SpineMid      [1.0, 0.0, 0.0, s, jt, st, true] (toright u)  (toright d))
+  | SpineBase(l,r)	     where (jt && true) to (SpineBase     [1.0, 0.0, 0.0, s, jt, st, true] (toright l)  (toright r))
+  | Neck(h)        	     where (jt && true) to (Neck          [1.0, 0.0, 0.0, s, jt, st, true] (toright h))
+  | Shoulder(e) 		 where (jt && st)   to (Shoulder      [1.0, 0.0, 0.0, s, jt, st, true] (toright e))
+  | Elbow(w)    		 where (jt && st)   to (Elbow         [1.0, 0.0, 0.0, s, jt, st, true] (toright w))
+  | Wrist(h)    		 where (jt && st)   to (Wrist         [1.0, 0.0, 0.0, s, jt, st, true] (toright h))
+  | Hip(k)      		 where (jt && st)   to (Hip           [1.0, 0.0, 0.0, s, jt, st, true] (toright k))
+  | Knee(a)     		 where (jt && st)   to (Knee          [1.0, 0.0, 0.0, s, jt, st, true] (toright a))
+  | Ankle(f)   		     where (jt && st)   to (Ankle         [1.0, 0.0, 0.0, s, jt, st, true] (toright f))
+  | Head()      		 where (jt && true) to (Head          [1.0, 0.0, 0.0, s, jt, st, true])
+  | HandTip()  		     where (jt && st)   to (HandTip       [1.0, 0.0, 0.0, s, jt, st, true])
+  | Thumb()    		     where (jt && st)   to (Thumb         [1.0, 0.0, 0.0, s, jt, st, true])
+  | Foot()     		     where (jt && st)   to (Foot          [1.0, 0.0, 0.0, s, jt, st, true])
+  | SpineShoulder(l,c,r) where !(jt && true) to (SpineShoulder [x, y, z, s, jt, st, at] (toright l)  (toright c)  (toright r)) 
+  | Hand(ti,th)     	 where !(jt && st)   to (Hand          [x, y, z, s, jt, st, at] (toright ti) (toright th))
+  | SpineMid(u,d)        where !(jt && true) to (SpineMid      [x, y, z, s, jt, st, at] (toright u)  (toright d))
+  | SpineBase(l,r)	     where !(jt && true) to (SpineBase     [x, y, z, s, jt, st, at] (toright l)  (toright r))
+  | Neck(h)        	     where !(jt && true) to (Neck          [x, y, z, s, jt, st, at] (toright h))
+  | Shoulder(e) 		 where !(jt && st)   to (Shoulder      [x, y, z, s, jt, st, at] (toright e))
+  | Elbow(w)    		 where !(jt && st)   to (Elbow         [x, y, z, s, jt, st, at] (toright w))
+  | Wrist(h)    		 where !(jt && st)   to (Wrist         [x, y, z, s, jt, st, at] (toright h))
+  | Hip(k)      		 where !(jt && st)   to (Hip           [x, y, z, s, jt, st, at] (toright k))
+  | Knee(a)     		 where !(jt && st)   to (Knee          [x, y, z, s, jt, st, at] (toright a))
+  | Ankle(f)   		     where !(jt && st)   to (Ankle         [x, y, z, s, jt, st, at] (toright f))
+  | Head()      		 where !(jt && true) to (Head          [x, y, z, s, jt, st, at])
+  | HandTip()  		     where !(jt && st)   to (HandTip       [x, y, z, s, jt, st, at])
+  | Thumb()    		     where !(jt && st)   to (Thumb         [x, y, z, s, jt, st, at])
+  | Foot()     		     where !(jt && st)   to (Foot          [x, y, z, s, jt, st, at])}
+
+
+
+
+
+
+
+
+
+
+//---------------------------------------------- FAST TESTS ----------------------------------------------//
+
+
+
+//ACTIVATION AND DEACTIVATION
+//leftst, rightst, <bodypartname>, resetjt, resetst, resetat
+
+//USEFUL TRANSFORMATIONS
+//toleft, toright, toup, todown, tofront, rotFroClock, rotFroCClock, rotSagClock, rotFroCClock, rotHorClock, rotHorCClock
+
+//USEFUL LANGUAGES
+//isleft, isright, isup, isdown, isfront, isback, ispointingleft, ispointingright, ispointingup, ispointingdown, ispointingfront, ispointingback
+
+  
+Def t1 : BodyPart -> BodyPart := (compose (compose (compose (compose rotFroClock rotFroCClock) rotFroClock)  leftst) wrist)
+Def t2 : BodyPart -> BodyPart := (compose (compose (compose (compose rotFroClock rotFroClock)  rotFroCClock) leftst) wrist)
+Def t3 : BodyPart -> BodyPart := (compose (compose (compose (compose rotFroClock rotFroClock)  rotFroClock)  leftst) wrist)
+
+Def crossover_arm_stretch : BodyPart -> BodyPart := (compose (compose (compose (compose (compose (compose (compose (compose (compose (compose (compose
+													 rightst wrist) elbow) toleft) resetjt) resetst) leftst) elbow) todown) resetjt) wrist) toup)
+
+Public Lang issafe : BodyPart 
+  { SpineShoulder(l,c,r) where (fispointingup y) given (issafe l) (issafe c) (issafe r)
+  | SpineMid(u,d)        where (fispointingup y) given (issafe u) (issafe d)
+  | Neck(h)        	     where (fispointingup y) given (issafe h)
+  | Head()        	     where (fispointingup y)}
+
+Def crossover_arm_stretch_safe : BodyPart -> BodyPart := (restrict_inp (restrict_out crossover_arm_stretch issafe) issafe)
+Def crossover_arm_stretch_safe_dom : BodyPart := (domain crossover_arm_stretch_safe)
+Def crossover_arm_stretch_dom : BodyPart := (domain crossover_arm_stretch)
+
+Print (is_empty_lang issafe)
+Print crossover_arm_stretch_safe_dom
+
+Def crossover_arm_stretch_lbody : BodyPart -> BodyPart := (restrict_inp crossover_arm_stretch lbody)
+Def crossover_arm_stretch_lbody_dom : BodyPart := (domain crossover_arm_stretch_lbody)
+Print crossover_arm_stretch_lbody_dom
+
+Def lbody_test : BodyPart := lbody
+Print lbody_test
+
+
+// Some older tests commented below
+//Def t1temp       : BodyPart -> BodyPart := (restrict_out t1 lbody)
+//Def t1restricted : BodyPart -> BodyPart := (restrict_out t1temp isleft)
+//Def t2temp       : BodyPart -> BodyPart := (restrict_out t2 lbody)
+//Def t2restricted : BodyPart -> BodyPart := (restrict_out t2temp isleft)
+//Def t3temp       : BodyPart -> BodyPart := (restrict_out t3 lbody)
+//Def t3restricted : BodyPart -> BodyPart := (restrict_out t3temp isleft)
+
+//Def dom1 : BodyPart := (domain t1restricted)
+//Def dom2 : BodyPart := (domain t2restricted)
+//Def dom3 : BodyPart := (domain t3restricted)
+
+//Print (eq_lang dom1 dom1)
+//Print (eq_lang dom1 dom2)
+//Print (eq_lang dom1 dom3)
+//Print (eq_lang dom2 dom1)
+//Print (eq_lang dom2 dom2)
+//Print (eq_lang dom2 dom3)
+//Print (eq_lang dom3 dom1)
+//Print (eq_lang dom3 dom2)
+//Print (eq_lang dom3 dom3)
+
+//Def comp1 : BodyPart := (complement dom1)
+//Def comp2 : BodyPart := (complement dom2)
+//Def comp3 : BodyPart := (complement dom3)
+//
+//Def intersec11 : BodyPart := (intersect dom1 comp1)
+//Def intersec12 : BodyPart := (intersect dom1 comp2)
+//Def intersec13 : BodyPart := (intersect dom1 comp3)
+//Def intersec21 : BodyPart := (intersect dom2 comp1)
+//Def intersec22 : BodyPart := (intersect dom2 comp2)
+//Def intersec23 : BodyPart := (intersect dom2 comp3)
+//Def intersec31 : BodyPart := (intersect dom3 comp1)
+//Def intersec32 : BodyPart := (intersect dom3 comp2)
+//Def intersec33 : BodyPart := (intersect dom3 comp3)
+
+
+//Alphabet BT[i:real]{Two(2),One(1),Zero(0)}
+//
+//Public Lang good_output:BT{
+//	  Zero() where (and (< 1.0 i) (< i 4.0))
+//  | One(x1) where (and (< 1.0 i) (< i 4.0)) given (good_output x1)
+//	| Two(x1,x2) given (good_output x1) (good_output x2)
+//}
+//
+//Public Trans t1: BT -> BT{
+//     Zero() to (Zero [(+ i 1.0)])
+//   | One(x) to (One [(+ i 1.0)] (t1 x))
+//   | Two(x1,x2) to (Two [(+ i 1.0)] (t1 x1) (t1 x2))
+//}
+//
+//Public Trans t2: BT -> BT{
+//     Zero() to (Zero [(+ i 2.0)])
+//   | One(x) to (One [(+ i 2.0)] (t2 x))
+//   | Two(x1,x2) to (Two [(+ i 2.0)] (t2 x1) (t2 x2))
+//}
+//
+//Def t1_o_t1 : BT -> BT := (compose t1 t1)
+//
+//Def t1_o_t1_restr : BT -> BT := (restrict_out t1_o_t1 good_output)
+//
+//Def t1_o_t1_restr_dom: BT := (domain t1_o_t1_restr)
+//
+//Def t2_restr : BT -> BT := (restrict_out t2 good_output)
+//
+//Def t2_restr_dom: BT := (domain t2_restr)
+//
+//
+////Print (is_empty_lang t1_o_t1_restr_dom)
+////Print t1_o_t1_restr_dom
+//
+////Print (is_empty_lang t2_restr_dom)
+////Print t2_restr_dom
+//
+//Def t2_restr_dom_c : BT := (complement t2_restr_dom)
+//Def t1_o_t1_restr_dom_c : BT := (complement t1_o_t1_restr_dom)
+//
+//Def i1 : BT := (intersect t2_restr_dom_c t1_o_t1_restr_dom)
+//Def i2 : BT := (intersect t1_o_t1_restr_dom_c t2_restr_dom)
+//
+//Print i1
+//Print i2
+

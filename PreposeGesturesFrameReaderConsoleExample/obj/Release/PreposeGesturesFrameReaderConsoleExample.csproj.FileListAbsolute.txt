@@ -1,0 +1,17 @@
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\Release\Kinect20.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\Release\libz3.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\Release\soccer.app
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\Release\PreposeGesturesFrameReaderConsoleExample.exe.config
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\Release\PreposeGesturesFrameReaderConsoleExample.exe
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\Release\PreposeGesturesFrameReaderConsoleExample.pdb
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\Release\Microsoft.Kinect.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\Release\Microsoft.Z3.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\Release\PreposeGestures.exe
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\Release\PreposeGesturesFrameReader.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\Release\Antlr4.Runtime.v4.5.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\Release\BigRationalLibrary.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\Release\PreposeGesturesFrameReader.pdb
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\Release\PreposeGestures.pdb
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\obj\Release\PreposeGesturesFrameReaderConsoleExample.csprojResolveAssemblyReference.cache
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\obj\Release\PreposeGesturesFrameReaderConsoleExample.exe
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\obj\Release\PreposeGesturesFrameReaderConsoleExample.pdb

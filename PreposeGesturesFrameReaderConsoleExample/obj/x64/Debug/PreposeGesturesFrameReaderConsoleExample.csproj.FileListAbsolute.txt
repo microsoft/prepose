@@ -1,0 +1,16 @@
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\x64\Debug\Kinect20.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\x64\Debug\libz3.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\x64\Debug\soccer.app
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\x64\Debug\PreposeGesturesFrameReaderConsoleExample.exe.config
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\x64\Debug\PreposeGesturesFrameReaderConsoleExample.exe
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\x64\Debug\PreposeGesturesFrameReaderConsoleExample.pdb
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\x64\Debug\Microsoft.Z3.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\x64\Debug\PreposeGestures.exe
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\x64\Debug\PreposeGesturesFrameReader.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\x64\Debug\Antlr4.Runtime.v4.5.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\x64\Debug\BigRationalLibrary.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\x64\Debug\PreposeGesturesFrameReader.pdb
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\bin\x64\Debug\PreposeGestures.pdb
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\obj\x64\Debug\PreposeGesturesFrameReaderConsoleExample.csprojResolveAssemblyReference.cache
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\obj\x64\Debug\PreposeGesturesFrameReaderConsoleExample.exe
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReaderConsoleExample\obj\x64\Debug\PreposeGesturesFrameReaderConsoleExample.pdb

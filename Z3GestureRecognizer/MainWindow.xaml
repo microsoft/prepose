@@ -1,0 +1,137 @@
+﻿<Window x:Class="PreposeGestureRecognizer.MainWindow"
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		Title="PrePose: Gesture Coding"
+		Height="738.179" Width="1257.558" 
+		Loaded="MainWindow_Loaded"
+		Closing="MainWindow_Closing"
+		WindowStartupLocation="Manual" Left="30" Top="30">
+    <Window.Resources>
+        <SolidColorBrush x:Key="MediumGreyBrush" Color="#ff6e6e6e" />
+        <SolidColorBrush x:Key="KinectPurpleBrush" Color="#ff52318f" />
+        <SolidColorBrush x:Key="KinectBlueBrush" Color="#ff00BCF2" />
+    </Window.Resources>
+    <Grid x:Name="MainGrid" Margin="10,0,10.2,71.8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <!--<ProgressBar Name="ProgressBarPose" Maximum="100" Minimum="0" Height="20" Margin="10,0,0.2,-38.2" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Grid.Row="2"/>
+		<ProgressBar Name="ProgressBarGesture" Maximum="100" Minimum="0" Height="20" Margin="10,0,0.2,-63.2" VerticalAlignment="Bottom" Grid.ColumnSpan="2" Grid.Row="2"/>-->
+        <Grid Grid.Row="0" Grid.Column="1" Margin="0,20,0,0">
+            <Image Source="Images\Status.png" Stretch="None" Margin="10,0,10,5" RenderTransformOrigin="2.11,0.64" />
+        </Grid>
+        <Viewbox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center">
+            <Image Source="{Binding ImageSource}" Stretch="UniformToFill" />
+        </Viewbox>
+        <StatusBar Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" x:Name="statusBar" VerticalAlignment="Bottom" Background="White" Foreground="{StaticResource MediumGreyBrush}">
+            <StatusBarItem Content="{Binding StatusText}" />
+        </StatusBar>
+        <avalonEdit:TextEditor x:Name="ScriptTextBox" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto"
+			xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+			FontFamily="Consolas"
+			Text="Code here..."
+			Margin="10,75,30,76"
+			MinHeight="300"
+			Loaded="ScriptTextBox_Loaded" 
+			Foreground="#FF282828"
+			Grid.RowSpan="2"
+			FontSize="13"
+			SyntaxHighlighting="Custom Highlighting"/>
+        <!--<TextBox     FontFamily="Consolas"   AcceptsTab="True" AcceptsReturn="True" AutoWordSelection="True" />-->
+        <TextBlock Margin="10,0,10,10" MinWidth="150" Foreground="{DynamicResource MediumGreyBrush}" FontFamily="Segoe UI" FontSize="18" Height="28" VerticalAlignment="Bottom" Text="Prepose application..."/>
+        <Button x:Name="StartButton"  Content=" ► " Margin="10,0,0,21" Grid.Row="1" Click="StartButton_Click" Grid.Column="0" Width="80" HorizontalAlignment="Left" MinWidth="70" MinHeight="50" Height="50" VerticalAlignment="Bottom" Foreground="White" Background="#FF564583" FontSize="32" FontWeight="Bold" FontFamily="Arial"/>
+        <Button x:Name="NextButton" Visibility="Hidden"  Content=" ►l " Margin="95,0,0,38.2" Grid.Row="1" Click="NextButton_Click" Grid.Column="0" Width="47" HorizontalAlignment="Left" MinWidth="60" MinHeight="30" Height="32" VerticalAlignment="Bottom" Foreground="White" Background="#FF564583" FontSize="16" FontFamily="Arial"/>
+        <CheckBox Content="synthetic" Visibility="Hidden" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" Margin="163,0,0,35.4" VerticalAlignment="Bottom" Checked="SyntheticCheckBox_Checked" Unchecked="SyntheticCheckBox_Unchecked"/>
+        <!--<Grid x:Name="GestureFeedbackGrid" Margin="10,75,30,101.2" Grid.RowSpan="2" Visibility="Hidden">
+			<Grid x:Name="GestureFeedback0" HorizontalAlignment="Left" Height="56" VerticalAlignment="Top" Width="576" Background="#CCF4F4F4">
+				<TextBlock x:Name="GestureAndPoseNameTextBlock0" HorizontalAlignment="Left" TextWrapping="Wrap" Text="GestureName: CurrentPose" VerticalAlignment="Top" Margin="10,10,0,0" FontSize="14"/>
+				<TextBlock x:Name="TimesTextBlock0" HorizontalAlignment="Left" TextWrapping="Wrap" Text="times" VerticalAlignment="Top" Margin="537,28,0,0" RenderTransformOrigin="1.011,-0.276"/>
+				<TextBlock x:Name="CompletedTimesTextBlock0" HorizontalAlignment="Left" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Margin="499,10,0,0" Height="34" Width="33" TextAlignment="Center" FontSize="28"/>
+				<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="completed" VerticalAlignment="Top" Margin="437,15,0,0"/>
+				<ProgressBar x:Name="GestureFeedbackProgressBar0" Maximum="100" Minimum="0"  HorizontalAlignment="Left" Height="13" Margin="10,31,0,0" VerticalAlignment="Top" Width="484"/>
+			</Grid>
+			<Grid x:Name="GestureFeedback1" HorizontalAlignment="Left" Height="56" Margin="0,61,0,0" VerticalAlignment="Top" Width="576" Background="#CCF4F4F4">
+				<TextBlock x:Name="GestureAndPoseNameTextBlock1" HorizontalAlignment="Left" TextWrapping="Wrap" Text="GestureName: CurrentPose" VerticalAlignment="Top" Margin="10,10,0,0" FontSize="14"/>
+				<TextBlock x:Name="TimesTextBlock1" HorizontalAlignment="Left" TextWrapping="Wrap" Text="times" VerticalAlignment="Top" Margin="537,28,0,0" RenderTransformOrigin="1.011,-0.276"/>
+				<TextBlock x:Name="CompletedTimesTextBlock1" HorizontalAlignment="Left" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Margin="499,10,0,0" Height="34" Width="33" TextAlignment="Center" FontSize="28"/>
+				<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="completed" VerticalAlignment="Top" Margin="437,15,0,0"/>
+				<ProgressBar x:Name="GestureFeedbackProgressBar1" Maximum="100" Minimum="0" HorizontalAlignment="Left" Height="13" Margin="10,31,0,0" VerticalAlignment="Top" Width="484"/>
+			</Grid>
+			<Grid x:Name="GestureFeedback2" HorizontalAlignment="Left" Height="56" Margin="0,122,0,0" VerticalAlignment="Top" Width="576" Background="#CCF4F4F4">
+				<TextBlock x:Name="GestureAndPoseNameTextBlock2" HorizontalAlignment="Left" TextWrapping="Wrap" Text="GestureName: CurrentPose" VerticalAlignment="Top" Margin="10,10,0,0" FontSize="14"/>
+				<TextBlock x:Name="TimesTextBlock2" HorizontalAlignment="Left" TextWrapping="Wrap" Text="times" VerticalAlignment="Top" Margin="537,28,0,0" RenderTransformOrigin="1.011,-0.276"/>
+				<TextBlock x:Name="CompletedTimesTextBlock2" HorizontalAlignment="Left" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Margin="499,10,0,0" Height="34" Width="33" TextAlignment="Center" FontSize="28"/>
+				<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="completed" VerticalAlignment="Top" Margin="437,15,0,0"/>
+				<ProgressBar x:Name="GestureFeedbackProgressBar2" Maximum="100" Minimum="0" HorizontalAlignment="Left" Height="13" Margin="10,31,0,0" VerticalAlignment="Top" Width="484"/>
+			</Grid>
+			<Grid x:Name="GestureFeedback3" HorizontalAlignment="Left" Height="56" Margin="0,183,0,0" VerticalAlignment="Top" Width="576" Background="#CCF4F4F4">
+				<TextBlock x:Name="GestureAndPoseNameTextBlock3" HorizontalAlignment="Left" TextWrapping="Wrap" Text="GestureName: CurrentPose" VerticalAlignment="Top" Margin="10,10,0,0" FontSize="14"/>
+				<TextBlock x:Name="TimesTextBlock3" HorizontalAlignment="Left" TextWrapping="Wrap" Text="times" VerticalAlignment="Top" Margin="537,28,0,0" RenderTransformOrigin="1.011,-0.276"/>
+				<TextBlock x:Name="CompletedTimesTextBlock3" HorizontalAlignment="Left" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Margin="499,10,0,0" Height="34" Width="33" TextAlignment="Center" FontSize="28"/>
+				<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="completed" VerticalAlignment="Top" Margin="437,15,0,0"/>
+				<ProgressBar x:Name="GestureFeedbackProgressBar3" Maximum="100" Minimum="0" HorizontalAlignment="Left" Height="13" Margin="10,31,0,0" VerticalAlignment="Top" Width="484"/>
+			</Grid>
+			<Grid x:Name="GestureFeedback4" HorizontalAlignment="Left" Height="56" Margin="0,244,0,0" VerticalAlignment="Top" Width="576" Background="#CCF4F4F4">
+				<TextBlock x:Name="GestureAndPoseNameTextBlock4" HorizontalAlignment="Left" TextWrapping="Wrap" Text="GestureName: CurrentPose" VerticalAlignment="Top" Margin="10,10,0,0" FontSize="14"/>
+				<TextBlock x:Name="TimesTextBlock4" HorizontalAlignment="Left" TextWrapping="Wrap" Text="times" VerticalAlignment="Top" Margin="537,28,0,0" RenderTransformOrigin="1.011,-0.276"/>
+				<TextBlock x:Name="CompletedTimesTextBlock4" HorizontalAlignment="Left" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Margin="499,10,0,0" Height="34" Width="33" TextAlignment="Center" FontSize="28"/>
+				<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="completed" VerticalAlignment="Top" Margin="437,15,0,0"/>
+				<ProgressBar x:Name="GestureFeedbackProgressBar4" Maximum="100" Minimum="0" HorizontalAlignment="Left" Height="13" Margin="10,31,0,0" VerticalAlignment="Top" Width="484"/>
+			</Grid>
+			<Grid x:Name="GestureFeedback5" HorizontalAlignment="Left" Height="56" Margin="0,305,0,0" VerticalAlignment="Top" Width="576" Background="#CCF4F4F4">
+				<TextBlock x:Name="GestureAndPoseNameTextBlock5" HorizontalAlignment="Left" TextWrapping="Wrap" Text="GestureName: CurrentPose" VerticalAlignment="Top" Margin="10,10,0,0" FontSize="14"/>
+				<TextBlock x:Name="TimesTextBlock5" HorizontalAlignment="Left" TextWrapping="Wrap" Text="times" VerticalAlignment="Top" Margin="537,28,0,0" RenderTransformOrigin="1.011,-0.276"/>
+				<TextBlock x:Name="CompletedTimesTextBlock5" HorizontalAlignment="Left" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Margin="499,10,0,0" Height="34" Width="33" TextAlignment="Center" FontSize="28"/>
+				<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="completed" VerticalAlignment="Top" Margin="437,15,0,0"/>
+				<ProgressBar x:Name="GestureFeedbackProgressBar5" Maximum="100" Minimum="0" HorizontalAlignment="Left" Height="13" Margin="10,31,0,0" VerticalAlignment="Top" Width="484"/>
+			</Grid>
+			<Grid x:Name="GestureFeedback6" HorizontalAlignment="Left" Height="56" Margin="0,366,0,0" VerticalAlignment="Top" Width="576" Background="#CCF4F4F4">
+				<TextBlock x:Name="GestureAndPoseNameTextBlock6" HorizontalAlignment="Left" TextWrapping="Wrap" Text="GestureName: CurrentPose" VerticalAlignment="Top" Margin="10,10,0,0" FontSize="14"/>
+				<TextBlock x:Name="TimesTextBlock6" HorizontalAlignment="Left" TextWrapping="Wrap" Text="times" VerticalAlignment="Top" Margin="537,28,0,0" RenderTransformOrigin="1.011,-0.276"/>
+				<TextBlock x:Name="CompletedTimesTextBlock6" HorizontalAlignment="Left" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Margin="499,10,0,0" Height="34" Width="33" TextAlignment="Center" FontSize="28"/>
+				<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="completed" VerticalAlignment="Top" Margin="437,15,0,0"/>
+				<ProgressBar x:Name="GestureFeedbackProgressBar6" Maximum="100" Minimum="0" HorizontalAlignment="Left" Height="13" Margin="10,31,0,0" VerticalAlignment="Top" Width="484"/>
+			</Grid>
+			<Grid x:Name="GestureFeedback7" HorizontalAlignment="Left" Height="56" Margin="0,427,0,0" VerticalAlignment="Top" Width="576" Background="#CCF4F4F4">
+				<TextBlock x:Name="GestureAndPoseNameTextBlock7" HorizontalAlignment="Left" TextWrapping="Wrap" Text="GestureName: CurrentPose" VerticalAlignment="Top" Margin="10,10,0,0" FontSize="14"/>
+				<TextBlock x:Name="TimesTextBlock7" HorizontalAlignment="Left" TextWrapping="Wrap" Text="times" VerticalAlignment="Top" Margin="537,28,0,0" RenderTransformOrigin="1.011,-0.276"/>
+				<TextBlock x:Name="CompletedTimesTextBlock7" HorizontalAlignment="Left" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Margin="499,10,0,0" Height="34" Width="33" TextAlignment="Center" FontSize="28"/>
+				<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="completed" VerticalAlignment="Top" Margin="437,15,0,0"/>
+				<ProgressBar x:Name="GestureFeedbackProgressBar7" Maximum="100" Minimum="0" HorizontalAlignment="Left" Height="13" Margin="10,31,0,0" VerticalAlignment="Top" Width="484"/>
+			</Grid>
+		</Grid>-->
+        <TextBlock x:Name="MainGestureAndPoseNameTextBlock" Visibility="Hidden" HorizontalAlignment="Left" TextWrapping="Wrap" Text="GestureName: CurrentPose" VerticalAlignment="Bottom" Margin="10,0,0,-3.2" FontSize="19" Grid.Row="1" FontWeight="Bold" Grid.RowSpan="2"/>
+        <Grid HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" Margin="194,0,0,44" VerticalAlignment="Bottom" Height="26" Width="223">
+            <Slider x:Name="PrecisionSlider" HorizontalAlignment="Left" Grid.Column="0" Margin="55,-1,0,9" VerticalAlignment="Bottom" Height="18" Width="133" Maximum="30" Minimum="5" RenderTransformOrigin="0.5,0.5" Loaded="PrecisionSlider_Loaded" ValueChanged="PrecisionSlider_ValueChanged" LargeChange="0" Value="30">
+                <Slider.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="-180"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Slider.RenderTransform>
+            </Slider>
+            <TextBlock HorizontalAlignment="Left" Grid.Column="0" VerticalAlignment="Bottom" TextWrapping="Wrap" Text="precision" Margin="0,0,0,10"/>
+            <TextBlock x:Name="PrecisionTextBlock" HorizontalAlignment="Left" Grid.Column="0" Margin="193,0,0,10" VerticalAlignment="Bottom" TextWrapping="Wrap" Text="30°" Width="63" Foreground="#FF535353"/>
+        </Grid>
+        <Grid x:Name="CompletedGrid" Visibility="Hidden" Grid.Column="2" Margin="0,0,0.2,-67.2" Grid.Row="2" Height="80" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+            <TextBlock Margin="0,12,0.4,52" TextWrapping="Wrap" Text="completed" Foreground="#FF616161" TextAlignment="Center"/>
+            <TextBlock x:Name="TimesTextBlock" TextWrapping="Wrap" Text="times" VerticalAlignment="Top" Margin="17,57,17,0" RenderTransformOrigin="1.011,-0.276" TextAlignment="Center" Foreground="#FF565656"/>
+            <TextBlock x:Name="CompletedTimesTextBlock" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Margin="15,24,15.4,0" Height="34" TextAlignment="Center" FontSize="28"/>
+        </Grid>
+        <Button x:Name="OpenButton"  Content=" open " Margin="95,0,0,20.6" Grid.Row="1" Click="OpenButton_Click" Grid.Column="0" Width="68" HorizontalAlignment="Left" MinWidth="70" MinHeight="30" Height="49" VerticalAlignment="Bottom" Foreground="White" Background="#FF564583" FontSize="16" FontWeight="Bold" FontFamily="Arial"/>
+        <Border BorderBrush="#FFE1E1E1" 
+                BorderThickness="1" 
+                Margin="10,75,30,76"
+			    MinHeight="300"
+			    Grid.RowSpan="2"/>
+        <Button Content="DumpStatistics" HorizontalAlignment="Left" Margin="490,479.333,0,0" Grid.Row="1" VerticalAlignment="Top" Width="95" Height="45" Click="Button_Click"/>
+    </Grid>
+</Window>

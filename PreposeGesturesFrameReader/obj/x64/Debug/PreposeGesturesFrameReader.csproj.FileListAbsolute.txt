@@ -1,0 +1,10 @@
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\bin\x64\Debug\PreposeGesturesFrameReader.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\bin\x64\Debug\PreposeGesturesFrameReader.pdb
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\bin\x64\Debug\Microsoft.Z3.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\bin\x64\Debug\PreposeGestures.exe
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\bin\x64\Debug\Antlr4.Runtime.v4.5.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\bin\x64\Debug\BigRationalLibrary.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\bin\x64\Debug\PreposeGestures.pdb
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\obj\x64\Debug\PreposeGesturesFrameReader.csprojResolveAssemblyReference.cache
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\obj\x64\Debug\PreposeGesturesFrameReader.dll
+C:\Users\dmolnar\Documents\prepose\PreposeGesturesFrameReader\obj\x64\Debug\PreposeGesturesFrameReader.pdb
