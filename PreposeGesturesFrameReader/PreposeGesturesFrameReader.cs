@@ -21,8 +21,19 @@ namespace PreposeGestures
             AvailableGestures = (IReadOnlyList<Gesture>)parsedPreposeCode.Gestures; 
         }
 
-        public IReadOnlyList<Gesture> AvailableGestures { get; set; }
-        public uint AvailableGesturesCount { get; set; }
+        public PreposeGesturesDatabase(Func<PreposeGestures.App> preposeGestureAppFunc)
+        {
+            parsedPreposeCode = preposeGestureAppFunc();
+            AvailableGestures = (IReadOnlyList<Gesture>)parsedPreposeCode.Gestures;
+        }
+
+        public static PreposeGesturesDatabase FromText(string text)
+        {
+            return new PreposeGesturesDatabase(() => PreposeGestures.App.ReadAppText(text));
+        }
+
+        public IReadOnlyList<Gesture> AvailableGestures { get; private set; }
+        public uint AvailableGesturesCount { get; private set; }
     }
 
     public sealed class DiscreteGestureResult : IDisposable
