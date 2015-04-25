@@ -87,6 +87,7 @@ namespace PreposeGestures
 
             return new DiscreteGestureResult(detected, firstFrame, confidence);
         }
+
         public void Dispose()
         {
             throw new NotImplementedException();
@@ -220,7 +221,7 @@ namespace PreposeGestures
             if (this.IsPaused)
                 return;
 
-            PreposeGesturesFrame retFrame = new PreposeGesturesFrame();
+            PreposeGesturesFrame retFrame = null;
             PreposeGesturesFrameArrivedEventArgs upArgs = new PreposeGesturesFrameArrivedEventArgs(); 
 
             using (BodyFrame bodyFrame = e.FrameReference.AcquireFrame())
@@ -241,6 +242,7 @@ namespace PreposeGestures
                             var result = this.PreposeGesturesFrameSource.myMatcher.TestBody(z3body);
 
                             // Fill in the gesture results for this frame
+                            retFrame = new PreposeGesturesFrame();
                             retFrame.results = result;
                             break;
                         }
