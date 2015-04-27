@@ -133,5 +133,6 @@
 			    MinHeight="300"
 			    Grid.RowSpan="2"/>
         <Button Content="DumpStatistics" HorizontalAlignment="Left" Margin="490,479.333,0,0" Grid.Row="1" VerticalAlignment="Top" Width="95" Height="45" Click="Button_Click"/>
+        <TextBlock x:Name="compileStatus" HorizontalAlignment="Left" Margin="194,508,0,0" Grid.Row="1" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="206"/>
     </Grid>
 </Window>

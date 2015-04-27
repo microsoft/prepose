@@ -1,9 +1,0 @@
-C:\Users\David\Documents\Prepose\GestureRecognizerKinectV2\Z3Experiments\Z3Experiments\bin\Debug\PreposeGestures.pdb
-C:\Users\David\Documents\Prepose\GestureRecognizerKinectV2\Z3Experiments\Z3Experiments\bin\Debug\Antlr4.Runtime.v4.5.dll
-C:\Users\David\Documents\Prepose\GestureRecognizerKinectV2\Z3Experiments\Z3Experiments\bin\Debug\BigRationalLibrary.dll
-C:\Users\David\Documents\Prepose\GestureRecognizerKinectV2\Z3Experiments\Z3Experiments\bin\Debug\Microsoft.Z3.dll
-C:\Users\David\Documents\Prepose\GestureRecognizerKinectV2\Z3Experiments\Z3Experiments\obj\Debug\PreposeGestures.csprojResolveAssemblyReference.cache
-C:\Users\David\Documents\Prepose\GestureRecognizerKinectV2\Z3Experiments\Z3Experiments\obj\Debug\PreposeGestures.pdb
-C:\Users\David\Documents\Prepose\GestureRecognizerKinectV2\Z3Experiments\Z3Experiments\bin\Debug\PreposeGestures.dll.config
-C:\Users\David\Documents\Prepose\GestureRecognizerKinectV2\Z3Experiments\Z3Experiments\bin\Debug\PreposeGestures.dll
-C:\Users\David\Documents\Prepose\GestureRecognizerKinectV2\Z3Experiments\Z3Experiments\obj\Debug\PreposeGestures.dll

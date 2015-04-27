@@ -830,22 +830,30 @@ namespace PreposeGestureRecognizer
 			{
 				parsedText = this.ScriptTextBox.Text;
 
-                var app = PreposeGestures.App.ReadAppText(parsedText);
-                matcher = new BodyMatcher(app, (int)PrecisionSlider.Value);
-				Debug.WriteLine(app);
+                try
+                {
+                    var app = PreposeGestures.App.ReadAppText(parsedText);
+                    matcher = new BodyMatcher(app, (int)PrecisionSlider.Value);
+                    Debug.WriteLine(app);
 
-                // get the last gesture
-				this.MainGestureAndPoseNameTextBlock.Text = app.Gestures[app.Gestures.Count - 1].Name;
-				this.StartMainProgressBars(app.Gestures[app.Gestures.Count - 1].Steps);
+                    // get the last gesture
+                    this.MainGestureAndPoseNameTextBlock.Text = app.Gestures[app.Gestures.Count - 1].Name;
+                    this.StartMainProgressBars(app.Gestures[app.Gestures.Count - 1].Steps);
 
-				this.CompletedGrid.Visibility = System.Windows.Visibility.Visible;
-				this.MainGestureAndPoseNameTextBlock.Visibility = System.Windows.Visibility.Visible;
+                    this.CompletedGrid.Visibility = System.Windows.Visibility.Visible;
+                    this.MainGestureAndPoseNameTextBlock.Visibility = System.Windows.Visibility.Visible;
 
-				this.ScriptTextBox.IsReadOnly = true;
-				this.ScriptTextBox.Background = Brushes.WhiteSmoke;
-				this.ScriptTextBox.Foreground = Brushes.DarkGray;                
-				this.StartButton.Content = "ll";
-				playingGesture = true;
+                    this.ScriptTextBox.IsReadOnly = true;
+                    this.ScriptTextBox.Background = Brushes.WhiteSmoke;
+                    this.ScriptTextBox.Foreground = Brushes.DarkGray;
+                    this.StartButton.Content = "ll";
+                    this.compileStatus.Text = "OK";
+                    playingGesture = true;
+                }
+                catch
+                {
+                    this.compileStatus.Text = "Script compilation error";
+                }
 			}
 			else
 			{
@@ -860,6 +868,7 @@ namespace PreposeGestureRecognizer
 				this.ScriptTextBox.Foreground = Brushes.Black;
 				this.ScriptTextBox.Text = parsedText;
 				this.StartButton.Content = " ► ";
+                this.compileStatus.Text = "";
 				playingGesture = false;
 			}            
 		}

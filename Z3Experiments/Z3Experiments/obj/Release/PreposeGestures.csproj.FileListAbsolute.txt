@@ -1,8 +1,0 @@
-C:\Users\dmolnar\Documents\prepose\Z3Experiments\Z3Experiments\bin\Release\PreposeGestures.exe.config
-C:\Users\dmolnar\Documents\prepose\Z3Experiments\Z3Experiments\bin\Release\PreposeGestures.exe
-C:\Users\dmolnar\Documents\prepose\Z3Experiments\Z3Experiments\bin\Release\PreposeGestures.pdb
-C:\Users\dmolnar\Documents\prepose\Z3Experiments\Z3Experiments\bin\Release\Antlr4.Runtime.v4.5.dll
-C:\Users\dmolnar\Documents\prepose\Z3Experiments\Z3Experiments\bin\Release\BigRationalLibrary.dll
-C:\Users\dmolnar\Documents\prepose\Z3Experiments\Z3Experiments\bin\Release\Microsoft.Z3.dll
-C:\Users\dmolnar\Documents\prepose\Z3Experiments\Z3Experiments\obj\Release\PreposeGestures.exe
-C:\Users\dmolnar\Documents\prepose\Z3Experiments\Z3Experiments\obj\Release\PreposeGestures.pdb
