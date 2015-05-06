@@ -120,6 +120,8 @@
             </Slider>
             <TextBlock HorizontalAlignment="Left" Grid.Column="0" VerticalAlignment="Bottom" TextWrapping="Wrap" Text="precision" Margin="0,0,0,10"/>
             <TextBlock x:Name="PrecisionTextBlock" HorizontalAlignment="Left" Grid.Column="0" Margin="193,0,0,10" VerticalAlignment="Bottom" TextWrapping="Wrap" Text="30°" Width="63" Foreground="#FF535353"/>
+            <TextBlock x:Name="compileStatus" HorizontalAlignment="Left" Margin="0,35,0,-25" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="206"/>
+            <Button Content="DumpStatistics" HorizontalAlignment="Left" Margin="256,0,-128,-19" VerticalAlignment="Top" Width="95" Height="45" Click="Button_Click"/>
         </Grid>
         <Grid x:Name="CompletedGrid" Visibility="Hidden" Grid.Column="2" Margin="0,0,0.2,-67.2" Grid.Row="2" Height="80" VerticalAlignment="Bottom" HorizontalAlignment="Right">
             <TextBlock Margin="0,12,0.4,52" TextWrapping="Wrap" Text="completed" Foreground="#FF616161" TextAlignment="Center"/>
@@ -132,7 +134,6 @@
                 Margin="10,75,30,76"
 			    MinHeight="300"
 			    Grid.RowSpan="2"/>
-        <Button Content="DumpStatistics" HorizontalAlignment="Left" Margin="490,479.333,0,0" Grid.Row="1" VerticalAlignment="Top" Width="95" Height="45" Click="Button_Click"/>
-        <TextBlock x:Name="compileStatus" HorizontalAlignment="Left" Margin="194,508,0,0" Grid.Row="1" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="206"/>
+        
     </Grid>
 </Window>
