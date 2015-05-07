@@ -87,6 +87,7 @@ namespace PreposeGestures
 
             return new DiscreteGestureResult(detected, firstFrame, confidence);
         }
+
         public void Dispose()
         {
             throw new NotImplementedException();
@@ -188,7 +189,7 @@ namespace PreposeGestures
 
         public PreposeGesturesFrameReference(PreposeGesturesFrame frame)
         {
-            frame = myFrame; 
+            myFrame = frame;
         }
 
         public TimeSpan RelativeTime { get; set; }
@@ -212,35 +213,41 @@ namespace PreposeGestures
         /// <summary>
         /// Array for the bodies
         /// </summary>
-        private Body[] bodies = null; 
+        private Body[] bodies = new Body[6]; 
 
 
         void myBodyReader_FrameArrived(object sender, BodyFrameArrivedEventArgs e)
-        {   
+        {
+            if (this.IsPaused)
+                return;
 
-
-            PreposeGesturesFrame retFrame = new PreposeGesturesFrame();
+            PreposeGesturesFrame retFrame = null;
             PreposeGesturesFrameArrivedEventArgs upArgs = new PreposeGesturesFrameArrivedEventArgs(); 
 
             using (BodyFrame bodyFrame = e.FrameReference.AcquireFrame())
             {
-                // Perform the gesture matching on this frame
-                var z3body = new Z3Body(); 
-                bodyFrame.GetAndRefreshBodyData(this.bodies);
-
-                foreach (var body in this.bodies)
+                if (bodyFrame != null)
                 {
-                    if (body.TrackingId == this.mySource.TrackingId)
-                    {
-                        // We are at the correct body - go ahead and feed it to the BodyMatcher
-                        IReadOnlyDictionary<Microsoft.Kinect.JointType, Joint> joints = body.Joints;
-                        z3body = Z3KinectConverter.CreateZ3Body(joints);
-                        var result = this.PreposeGesturesFrameSource.myMatcher.TestBody(z3body);
+                    // Perform the gesture matching on this frame
+                    var z3body = new Z3Body();
+                    bodyFrame.GetAndRefreshBodyData(this.bodies);
 
-                        // Fill in the gesture results for this frame
-                        retFrame.results = result;
+                    foreach (var body in this.bodies)
+                    {
+                        if (body.TrackingId == this.mySource.TrackingId)
+                        {
+                            // We are at the correct body - go ahead and feed it to the BodyMatcher
+                            IReadOnlyDictionary<Microsoft.Kinect.JointType, Joint> joints = body.Joints;
+                            z3body = Z3KinectConverter.CreateZ3Body(joints);
+                            var result = this.PreposeGesturesFrameSource.myMatcher.TestBody(z3body);
+
+                            // Fill in the gesture results for this frame
+                            retFrame = new PreposeGesturesFrame();
+                            retFrame.results = result;
+                            break;
+                        }
                     }
-                 }
+                }
             }
             
             // TODO: revisit the way the PreposeGesturesFrameReference is implemented to avoid keeping around massive amounts of frames
@@ -281,7 +288,16 @@ namespace PreposeGestures
 
 
         public bool IsPaused { get; set; }
-        public PreposeGesturesFrameSource PreposeGesturesFrameSource { get; set; }
+
+        public PreposeGesturesFrameSource PreposeGesturesFrameSource
+        {
+            get
+            {
+                return this.mySource;
+            }
+        }
+
+
         public event EventHandler<PreposeGesturesFrameArrivedEventArgs> FrameArrived; 
 
         public PreposeGesturesFrame CalculateAndAcquireLastFrame()
