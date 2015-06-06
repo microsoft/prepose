@@ -36,37 +36,74 @@ namespace PreposeGestures
         public uint AvailableGesturesCount { get; private set; }
     }
 
-    public sealed class DiscreteGestureResult : IDisposable
+    public sealed class DiscreteGestureResult
     {
+        private readonly float confidence;
+        private readonly bool detected;
+        private readonly bool firstFrameDetected;
+
+        public float Confidence
+        {
+            get { return this.confidence; }
+        }
+
+        public bool Detected
+        {
+            get { return this.detected; }
+        }
+
+        public bool FirstFrameDetected
+        {
+            get { return this.firstFrameDetected; }
+        }
+
         public DiscreteGestureResult(bool detected, bool firstFrameDetected, float confidence)
         {
-            throw new NotImplementedException();
-        }
-
-        public float Confidence { get; set; }
-        public bool Detected { get; set; }
-        public bool FirstFrameDetected { get; set; }
-
-        public void Dispose()
-        {
-            return;
-        }
-
-        [HandleProcessCorruptedStateExceptions]
-        protected void Dispose(bool A_0)
-        {
-            return;
+            this.confidence = confidence;
+            this.firstFrameDetected = firstFrameDetected;
+            this.detected = detected;
         }
     }
 
-
     public class PreposeGesturesFrame : IDisposable
     {
-        public TimeSpan RelativeTime { get; set; }
-        public ulong TrackingId { get; set;  }
+        private readonly IReadOnlyList<GestureStatus> frameResults;
+        private readonly PreposeGesturesFrameSource frameSource;
+        private readonly TimeSpan relativeTime;
+        private readonly ulong trackingId;
 
-        public List<GestureStatus> results; 
-        public PreposeGesturesFrameSource PreposeGesturesFrameSource { get; set; }
+        public TimeSpan RelativeTime
+        {
+            get { return this.relativeTime; }
+        }
+
+        public ulong TrackingId
+        {
+            get { return this.trackingId; }
+        }
+
+        public IReadOnlyList<GestureStatus> FrameResults
+        {
+            get { return this.frameResults; }
+        }
+
+        public PreposeGesturesFrameSource FrameSource
+        {
+            get { return this.frameSource; }
+        }
+
+        public PreposeGesturesFrame(IReadOnlyList<GestureStatus> frameResults, PreposeGesturesFrameSource frameSource, ulong trackingId, TimeSpan relativeTime)
+        {
+            if (frameResults == null)
+                throw new ArgumentNullException("frameResults");
+            if (frameSource == null)
+                throw new ArgumentNullException("frameSource");
+
+            this.frameResults = frameResults;
+            this.frameSource = frameSource;
+            this.trackingId = trackingId;
+            this.relativeTime = relativeTime;
+        }
 
         public DiscreteGestureResult GetDiscreteGestureResult(Gesture gesture)
         {
@@ -74,7 +111,7 @@ namespace PreposeGestures
             bool firstFrame = false;
             float confidence = 0.0f;
 
-            foreach (GestureStatus gs in results)
+            foreach (GestureStatus gs in frameResults)
             {
                 if (gesture.Name.Equals(gs.GestureName))
                 {
@@ -90,13 +127,13 @@ namespace PreposeGestures
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            
         }
 
         [HandleProcessCorruptedStateExceptions]
         protected void Dispose(bool A_0)
         {
-            throw new NotImplementedException();
+            
         }
     }
     public class PreposeGesturesFrameSource : IDisposable, INotifyPropertyChanged
@@ -172,7 +209,7 @@ namespace PreposeGestures
         }
         public void SetIsEnabled(Gesture gesture, bool isEnabled)
         {
-            throw new NotImplementedException(); 
+
         }
         
 
@@ -242,8 +279,7 @@ namespace PreposeGestures
                             var result = this.PreposeGesturesFrameSource.myMatcher.TestBody(z3body);
 
                             // Fill in the gesture results for this frame
-                            retFrame = new PreposeGesturesFrame();
-                            retFrame.results = result;
+                            retFrame = new PreposeGesturesFrame(result, this.mySource, body.TrackingId, bodyFrame.RelativeTime);
                             break;
                         }
                     }
