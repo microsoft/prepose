@@ -155,7 +155,10 @@ namespace PreposeGestures.Parser
 			{
 				Contract.Assert(s != null);
 				var w = this.Visit(s);
-				Contract.Assert(w != null);
+                if (w == null)
+                {
+                    throw new PreposeParserException("Failed to parse statement", s);
+                }
 				var statement = w.GetValue();
 				if (statement != null)
 				{
@@ -171,14 +174,14 @@ namespace PreposeGestures.Parser
 						continue;
 					}
 
-					throw new ArgumentException("Wrong return type");
+                    throw new PreposeParserException("Invalid return type", s);
 				}
 			}
 
 			var pose = new Pose(context.ID().GetText(), bt, br);
 			if (this.Poses.ContainsKey(pose.Name))
 			{
-				throw new ArgumentException("Pose " + pose.Name + " has been previosly seen.");
+                throw new PreposeParserException("Pose " + pose.Name + " has been previously seen.", context);
 			}
 
 			this.Poses.Add(pose.Name, pose);

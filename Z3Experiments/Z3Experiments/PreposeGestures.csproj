@@ -117,6 +117,7 @@
     <Compile Include="Parser\PreposeGesturesLexer.cs" />
     <Compile Include="Parser\PreposeGesturesListener.cs" />
     <Compile Include="Parser\PreposeGesturesParser.cs" />
+    <Compile Include="Parser\PreposeParserException.cs" />
     <Compile Include="Parser\PreposeGesturesVisitor.cs" />
     <Compile Include="Gestures\Pose.cs" />
     <Compile Include="Parser\Visitor.cs" />
