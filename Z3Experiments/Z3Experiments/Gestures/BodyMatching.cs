@@ -162,7 +162,7 @@ namespace PreposeGestures
             var time4 = stopwatch.ElapsedMilliseconds - time3;
 
             // NOT THREAD SAFE XXX 
-            bool restrictionSucceeded = this.Gesture.Steps[CurrentStep].Pose.IsBodyAccepted(body);
+             bool restrictionSucceeded = this.Gesture.Steps[CurrentStep].Pose.IsBodyAccepted(body);
             
             var time5 = stopwatch.ElapsedMilliseconds - time4;
 
@@ -191,6 +191,8 @@ namespace PreposeGestures
                     this.CompletedCount += 1;
                     overallSucceeded = true; 
                 }
+
+                this.UpdateTargetBody(body);
             }
             // If body was not accepted then check if error is higher than threshold
             // If accumulated error is too high the gesture is broken
