@@ -51,12 +51,12 @@ namespace PreposeGestures
             // InitBody synthesizes the initial pose to go after. Synthesizing a pose is _not_ parallel-safe because the Z3 context isn't safe to share across threads
             foreach (var matcher in this.Matchers)
             {
-                matcher.InitBody(body); 
+                matcher.InitBody(body);
             }
 
             // Data parallel -- each matcher is independent of each other, so we can use Task Parallel Library to send each matcher to a different core if necessary
             // The task parallel library should take care of locking the result array for us...let's hope it doesn't serialize by locking result in the wrong way
- 
+
             /*
             Parallel.ForEach(this.Matchers,
                 matcher => {
@@ -67,13 +67,13 @@ namespace PreposeGestures
             */
 
             // Matching itself uses the Z3 context - and that can't be shared across threads! 
-            
+
             foreach (var matcher in this.Matchers)
             {
                 matcher.TestBody(body, this.Precision, Z3.Context);
                 result.Add(matcher.GetStatus());
             }
-            
+
             // Check for each matcher to see if it succeeded. If it did, then synthesize a new target position. 
             foreach (var matcher in this.Matchers)
             {
@@ -82,7 +82,7 @@ namespace PreposeGestures
                     matcher.UpdateTargetBody(body);
                 }
             }
-             
+
             return result;
         }
 
@@ -109,10 +109,10 @@ namespace PreposeGestures
             this.Target = null;
         }
 
-        public Context GestureMatcherLocalContext; 
+        public Context GestureMatcherLocalContext;
 
         public Gesture Gesture { get; set; }
-        public uint frameCount = 0; 
+        public uint frameCount = 0;
 
         public void InitBody(Z3Body body)
         {
@@ -121,7 +121,7 @@ namespace PreposeGestures
 
         public void InitBody(Z3Body body, Context localContext)
         {
-            GestureMatcherLocalContext = localContext; 
+            GestureMatcherLocalContext = localContext;
             if (this.Target == null)
             {
                 this.UpdateTargetBody(body);
@@ -147,10 +147,10 @@ namespace PreposeGestures
             // Check distance to target transformed joints and if body satisfies restrictions
             var distance = 2.0;
 
-            
+
             if (this.Target.TransformedJoints.Count > 0)
                 distance = CalcMaxDistance(this.LastDistanceVectors, this.Target.TransformedJoints);
-            
+
 
             this.AccumulatedError += distance - this.LastDistance;
             this.LastDistance = distance;
@@ -163,20 +163,20 @@ namespace PreposeGestures
 
             // NOT THREAD SAFE XXX 
             bool restrictionSucceeded = this.Gesture.Steps[CurrentStep].Pose.IsBodyAccepted(body);
-            
+
             var time5 = stopwatch.ElapsedMilliseconds - time4;
 
             matchStat.timeMs = time5;
             matchStat.gestureName = this.Gesture.Name;
             matchStat.uid = frameCount;
-            matchStat.poseName = this.Gesture.Steps[CurrentStep].Pose.Name; 
+            matchStat.poseName = this.Gesture.Steps[CurrentStep].Pose.Name;
 
             bool succeeded =
                 (transformSucceeded || this.Target.TransformedJoints.Count == 0) &&
                 (restrictionSucceeded || this.Target.RestrictedJoints.Count == 0);
 
             // Overall succeeded represents whether the entire gesture was matched on this test, not just a single pose
-            bool overallSucceeded = false; 
+            bool overallSucceeded = false;
 
             // If body is accepted move to matching the next pose in sequence
             if (succeeded)
@@ -189,8 +189,10 @@ namespace PreposeGestures
                 {
                     this.Reset(body);
                     this.CompletedCount += 1;
-                    overallSucceeded = true; 
+                    overallSucceeded = true;
                 }
+
+                this.UpdateTargetBody(body);
             }
             // If body was not accepted then check if error is higher than threshold
             // If accumulated error is too high the gesture is broken
@@ -212,18 +214,18 @@ namespace PreposeGestures
             if (CompletedCount == 1 & overallSucceeded)
                 result.succeededDetectionFirstFrame = true;
             else
-                result.succeededDetectionFirstFrame = false; 
+                result.succeededDetectionFirstFrame = false;
 
             // TODO: check the semantics of confidence in the VisualGestureBuilder API.
             // Here confidence is the same as distance from the target body. 
             // That is NOT the same as if confidence were a probability that we are correct
             // We want to have as close semantics as possible to the VisualGestureBuilder API, so we need to double check this
-            result.confidence = (float)distance; 
+            result.confidence = (float)distance;
 
             var time6 = stopwatch.ElapsedMilliseconds - time5;
             frameCount++;
 
-            
+
             // Record the statistics entry here 
             GestureStatistics.matchTimes.Add(matchStat);
             return result;
@@ -231,12 +233,12 @@ namespace PreposeGestures
 
         internal void UpdateTargetBody(Z3Body start)
         {
-            UpdateTargetBody(start, Z3.Context); 
+            UpdateTargetBody(start, Z3.Context);
         }
         internal void UpdateTargetBody(Z3Body start, Context localZ3Context)
         {
             var stopwatch = new Stopwatch();
-            StatisticsEntrySynthesize synTime = new StatisticsEntrySynthesize(); 
+            StatisticsEntrySynthesize synTime = new StatisticsEntrySynthesize();
             stopwatch.Start();
             var time0 = stopwatch.ElapsedMilliseconds;
 
@@ -265,11 +267,11 @@ namespace PreposeGestures
 
             synTime.timeMs = time1;
             synTime.gestureName = this.Gesture.Name;
-            synTime.poseName = this.Gesture.Steps[CurrentStep].Pose.Name; 
-            synTime.uid = frameCount; 
+            synTime.poseName = this.Gesture.Steps[CurrentStep].Pose.Name;
+            synTime.uid = frameCount;
             //totalZ3Time += time1;
             frameCount++;
-            GestureStatistics.synthTimes.Add(synTime); 
+            GestureStatistics.synthTimes.Add(synTime);
 
             //Console.Write("z3time: " + (totalZ3Time / frameCount) + "                       \r");
         }
